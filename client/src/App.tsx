@@ -7,7 +7,8 @@ import NotFound from "@/pages/not-found";
 import { AuthProvider } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import AuthPage from "@/pages/auth-page";
-import { ThemeProvider } from "next-themes";
+import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // Dashboards
 import DirectorDashboard from "@/pages/dashboard/director-dashboard";
@@ -78,10 +79,11 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="light">
+      <ThemeProvider defaultTheme="light">
         <AuthProvider>
           <TooltipProvider>
             <Toaster />
+            <OnboardingWizard />
             <Router />
           </TooltipProvider>
         </AuthProvider>
