@@ -1,0 +1,262 @@
+import type { Express, Request, Response } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { setupAuth } from "./auth";
+import { z } from "zod";
+import {
+  insertAttendanceSchema,
+  insertCourseSchema,
+  insertEnrollmentSchema,
+  insertMemorizationSchema,
+  insertEventSchema,
+  insertLessonSchema
+} from "@shared/schema";
+
+// Middleware to check if user is authenticated
+const isAuthenticated = (req: Request, res: Response, next: Function) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ error: "Unauthorized" });
+};
+
+// Middleware to check user role
+const checkRole = (roles: string[]) => {
+  return (req: Request, res: Response, next: Function) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    if (roles.includes(req.user?.role)) {
+      return next();
+    }
+    
+    res.status(403).json({ error: "Forbidden" });
+  };
+};
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Sets up /api/register, /api/login, /api/logout, /api/user
+  setupAuth(app);
+
+  // Define API routes
+  
+  // Courses
+  app.get("/api/courses", isAuthenticated, async (req, res) => {
+    try {
+      const courses = await storage.getAllCourses();
+      res.json(courses);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch courses" });
+    }
+  });
+
+  app.get("/api/courses/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const course = await storage.getCourse(id);
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+      res.json(course);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch course" });
+    }
+  });
+
+  app.post("/api/courses", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const validData = insertCourseSchema.parse(req.body);
+      const course = await storage.createCourse(validData);
+      res.status(201).json(course);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create course" });
+    }
+  });
+
+  // Enrollments
+  app.post("/api/enrollments", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const validData = insertEnrollmentSchema.parse(req.body);
+      const enrollment = await storage.createEnrollment(validData);
+      res.status(201).json(enrollment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create enrollment" });
+    }
+  });
+
+  app.get("/api/courses/:courseId/students", isAuthenticated, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const students = await storage.getStudentsByCourse(courseId);
+      res.json(students);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch students" });
+    }
+  });
+
+  // Attendance
+  app.post("/api/attendance", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const validData = insertAttendanceSchema.parse(req.body);
+      const attendance = await storage.createAttendance(validData);
+      res.status(201).json(attendance);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to record attendance" });
+    }
+  });
+
+  app.get("/api/courses/:courseId/attendance", isAuthenticated, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const date = req.query.date as string;
+      const attendanceRecords = await storage.getAttendanceByCourseAndDate(courseId, date);
+      res.json(attendanceRecords);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch attendance records" });
+    }
+  });
+
+  app.get("/api/students/:studentId/attendance", isAuthenticated, async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.studentId);
+      const attendanceRecords = await storage.getAttendanceByStudent(studentId);
+      res.json(attendanceRecords);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch attendance records" });
+    }
+  });
+
+  // Memorization
+  app.post("/api/memorization", isAuthenticated, async (req, res) => {
+    try {
+      const validData = insertMemorizationSchema.parse(req.body);
+      const memorization = await storage.createMemorization(validData);
+      res.status(201).json(memorization);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to record memorization" });
+    }
+  });
+
+  app.get("/api/courses/:courseId/memorization", isAuthenticated, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const memorizations = await storage.getMemorizationByCourse(courseId);
+      res.json(memorizations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch memorization records" });
+    }
+  });
+
+  app.get("/api/students/:studentId/memorization", isAuthenticated, async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.studentId);
+      const memorizations = await storage.getMemorizationByStudent(studentId);
+      res.json(memorizations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch memorization records" });
+    }
+  });
+
+  app.patch("/api/memorization/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedMemorization = await storage.updateMemorization(id, req.body);
+      res.json(updatedMemorization);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update memorization" });
+    }
+  });
+
+  // Events
+  app.post("/api/events", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const validData = insertEventSchema.parse(req.body);
+      const event = await storage.createEvent(validData);
+      res.status(201).json(event);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create event" });
+    }
+  });
+
+  app.get("/api/events", isAuthenticated, async (req, res) => {
+    try {
+      const events = await storage.getAllEvents();
+      res.json(events);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch events" });
+    }
+  });
+
+  // Lessons
+  app.post("/api/lessons", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const validData = insertLessonSchema.parse(req.body);
+      const lesson = await storage.createLesson(validData);
+      res.status(201).json(lesson);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create lesson" });
+    }
+  });
+
+  app.get("/api/courses/:courseId/lessons", isAuthenticated, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const lessons = await storage.getLessonsByCourse(courseId);
+      res.json(lessons);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lessons" });
+    }
+  });
+
+  // Dashboard stats
+  app.get("/api/stats", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const totalStudents = await storage.countStudents();
+      const totalTeachers = await storage.countTeachers();
+      const totalCourses = await storage.countCourses();
+      const attendanceRate = await storage.getAttendanceRate();
+      
+      res.json({
+        totalStudents,
+        totalTeachers,
+        totalCourses,
+        attendanceRate
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch statistics" });
+    }
+  });
+
+  app.get("/api/users/role/:role", checkRole(['director']), async (req, res) => {
+    try {
+      const role = req.params.role;
+      const users = await storage.getUsersByRole(role);
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  const httpServer = createServer(app);
+
+  return httpServer;
+}
