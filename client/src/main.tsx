@@ -4,9 +4,12 @@ import "./index.css";
 
 // Import React-Icons for Font Awesome Icons
 import { IconContext } from "react-icons";
+import { ThemeProvider } from "./components/theme-provider";
 
 createRoot(document.getElementById("root")!).render(
   <IconContext.Provider value={{ className: "react-icons" }}>
-    <App />
+    <ThemeProvider defaultTheme="light" storageKey="islamic-studies-theme">
+      <App />
+    </ThemeProvider>
   </IconContext.Provider>
 );

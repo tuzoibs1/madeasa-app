@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface TopBarProps {
   title: string;
@@ -24,7 +25,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-10">
+    <header className="bg-white dark:bg-slate-900 shadow-sm sticky top-0 z-10">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center">
           <Button 
@@ -56,10 +57,14 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
               <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
             </Button>
           </div>
+          
+          <div className="mr-3">
+            <ThemeToggle />
+          </div>
 
           <div className="md:hidden">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user?.profilePicture} />
+              <AvatarImage src={user?.profilePicture || undefined} />
               <AvatarFallback>{user?.fullName ? getInitials(user.fullName) : "US"}</AvatarFallback>
             </Avatar>
           </div>
