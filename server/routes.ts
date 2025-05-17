@@ -329,6 +329,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch student progress" });
     }
   });
+  
+  // Password reset functionality
+  app.post("/api/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+      
+      // In a real application, you would:
+      // 1. Check if the email exists in your database
+      // 2. Generate a unique token and store it with an expiration time
+      // 3. Send an email with the reset link/code
+      
+      // For demo purposes, we'll just return success
+      // This simulates the email being sent successfully
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: "If an account with that email exists, a password reset code has been sent." 
+      });
+    } catch (error) {
+      console.error("Password reset request error:", error);
+      res.status(500).json({ error: "Failed to process password reset request" });
+    }
+  });
+  
+  app.post("/api/reset-password", async (req, res) => {
+    try {
+      const { email, token, newPassword } = req.body;
+      
+      if (!email || !token || !newPassword) {
+        return res.status(400).json({ 
+          error: "Email, reset token, and new password are required" 
+        });
+      }
+      
+      // In a real application, you would:
+      // 1. Verify the token is valid and not expired
+      // 2. Find the user by email
+      // 3. Update their password with the new hashed password
+      
+      // For demo purposes, we'll just return success
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: "Password has been successfully reset." 
+      });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ error: "Failed to reset password" });
+    }
+  });
 
   const httpServer = createServer(app);
 
