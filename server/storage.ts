@@ -5,7 +5,8 @@ import {
   attendanceRecords, type AttendanceRecord, type InsertAttendance,
   memorizations, type Memorization, type InsertMemorization,
   lessons, type Lesson, type InsertLesson,
-  events, type Event, type InsertEvent
+  events, type Event, type InsertEvent,
+  parentStudentRelations, type ParentStudentRelation, type InsertParentStudentRelation
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, count } from "drizzle-orm";
@@ -53,6 +54,13 @@ export interface IStorage {
   // Events
   createEvent(event: InsertEvent): Promise<Event>;
   getAllEvents(): Promise<Event[]>;
+  
+  // Parent Portal
+  createParentStudentRelation(relation: InsertParentStudentRelation): Promise<ParentStudentRelation>;
+  getStudentsByParent(parentId: number): Promise<User[]>;
+  getParentsByStudent(studentId: number): Promise<User[]>;
+  getParentStudentRelations(parentId: number): Promise<ParentStudentRelation[]>;
+  getStudentProgressSummary(studentId: number): Promise<any>; // Comprehensive summary for parent portal
   
   // Session store
   sessionStore: any;
@@ -262,6 +270,88 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(events)
       .orderBy(events.date);
+  }
+
+  // Parent Portal operations
+  async createParentStudentRelation(relation: InsertParentStudentRelation): Promise<ParentStudentRelation> {
+    const [parentStudentRelation] = await db
+      .insert(parentStudentRelations)
+      .values(relation)
+      .returning();
+    return parentStudentRelation;
+  }
+
+  async getStudentsByParent(parentId: number): Promise<User[]> {
+    const relations = await db
+      .select()
+      .from(parentStudentRelations)
+      .innerJoin(users, eq(parentStudentRelations.studentId, users.id))
+      .where(eq(parentStudentRelations.parentId, parentId));
+    
+    return relations.map(r => r.users);
+  }
+
+  async getParentsByStudent(studentId: number): Promise<User[]> {
+    const relations = await db
+      .select()
+      .from(parentStudentRelations)
+      .innerJoin(users, eq(parentStudentRelations.parentId, users.id))
+      .where(eq(parentStudentRelations.studentId, studentId));
+    
+    return relations.map(r => r.users);
+  }
+
+  async getParentStudentRelations(parentId: number): Promise<ParentStudentRelation[]> {
+    return await db
+      .select()
+      .from(parentStudentRelations)
+      .where(eq(parentStudentRelations.parentId, parentId));
+  }
+
+  async getStudentProgressSummary(studentId: number): Promise<any> {
+    // Get attendance data
+    const attendanceRecords = await this.getAttendanceByStudent(studentId);
+    
+    // Get memorization progress
+    const memorizationRecords = await this.getMemorizationByStudent(studentId);
+    
+    // Get enrollment data to find courses the student is enrolled in
+    const enrollmentData = await db
+      .select()
+      .from(enrollments)
+      .innerJoin(courses, eq(enrollments.courseId, courses.id))
+      .where(eq(enrollments.studentId, studentId));
+    
+    const courseIds = enrollmentData.map(e => e.courses.id);
+    
+    // Calculate attendance rate
+    const totalAttendance = attendanceRecords.length;
+    const presentAttendance = attendanceRecords.filter(a => a.status === 'present').length;
+    const attendanceRate = totalAttendance > 0 ? Math.round((presentAttendance / totalAttendance) * 100) : 0;
+    
+    // Calculate memorization progress
+    const completedMemorizations = memorizationRecords.filter(m => m.isCompleted).length;
+    const totalMemorizations = memorizationRecords.length;
+    const memorizationRate = totalMemorizations > 0 ? Math.round((completedMemorizations / totalMemorizations) * 100) : 0;
+    
+    // Get the most recent 5 attendance records
+    const recentAttendance = attendanceRecords.slice(0, 5);
+    
+    // Calculate average progress on memorizations
+    const averageProgress = memorizationRecords.length > 0 
+      ? Math.round(memorizationRecords.reduce((sum, m) => sum + m.progress, 0) / memorizationRecords.length) 
+      : 0;
+    
+    return {
+      studentId,
+      courses: enrollmentData.map(e => e.courses),
+      attendanceRate,
+      memorizationRate,
+      averageProgress,
+      totalCourses: courseIds.length,
+      recentAttendance,
+      recentMemorizations: memorizationRecords.slice(0, 5)
+    };
   }
 }
 

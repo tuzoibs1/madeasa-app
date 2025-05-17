@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
-export const userRoleEnum = pgEnum('user_role', ['director', 'teacher', 'student']);
+export const userRoleEnum = pgEnum('user_role', ['director', 'teacher', 'student', 'parent']);
 
 // Table definitions
 export const users = pgTable("users", {
@@ -75,6 +75,15 @@ export const events = pgTable("events", {
   createdById: integer("created_by_id").references(() => users.id),
 });
 
+export const parentStudentRelations = pgTable("parent_student_relations", {
+  id: serial("id").primaryKey(),
+  parentId: integer("parent_id").references(() => users.id).notNull(),
+  studentId: integer("student_id").references(() => users.id).notNull(),
+  relationship: text("relationship").notNull(), // e.g., "father", "mother", "guardian"
+  isPrimary: boolean("is_primary").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Zod schemas for validation and insertion
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true, createdAt: true });
@@ -83,6 +92,7 @@ export const insertAttendanceSchema = createInsertSchema(attendanceRecords).omit
 export const insertMemorizationSchema = createInsertSchema(memorizations).omit({ id: true });
 export const insertLessonSchema = createInsertSchema(lessons).omit({ id: true, createdAt: true });
 export const insertEventSchema = createInsertSchema(events).omit({ id: true });
+export const insertParentStudentRelationSchema = createInsertSchema(parentStudentRelations).omit({ id: true, createdAt: true });
 
 // Types for insertion
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -92,6 +102,7 @@ export type InsertAttendance = z.infer<typeof insertAttendanceSchema>;
 export type InsertMemorization = z.infer<typeof insertMemorizationSchema>;
 export type InsertLesson = z.infer<typeof insertLessonSchema>;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type InsertParentStudentRelation = z.infer<typeof insertParentStudentRelationSchema>;
 
 // Types for selection
 export type User = typeof users.$inferSelect;
@@ -101,6 +112,7 @@ export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
 export type Memorization = typeof memorizations.$inferSelect;
 export type Lesson = typeof lessons.$inferSelect;
 export type Event = typeof events.$inferSelect;
+export type ParentStudentRelation = typeof parentStudentRelations.$inferSelect;
 
 // Extended schemas for login
 export const loginSchema = z.object({

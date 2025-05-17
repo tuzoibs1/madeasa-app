@@ -9,7 +9,8 @@ import {
   insertEnrollmentSchema,
   insertMemorizationSchema,
   insertEventSchema,
-  insertLessonSchema
+  insertLessonSchema,
+  insertParentStudentRelationSchema
 } from "@shared/schema";
 
 // Middleware to check if user is authenticated
@@ -253,6 +254,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(users);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+  
+  // Parent Portal Routes
+  
+  // Link a parent to a student
+  app.post("/api/parent-student-relations", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const validData = insertParentStudentRelationSchema.parse(req.body);
+      const relation = await storage.createParentStudentRelation(validData);
+      res.status(201).json(relation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create parent-student relation" });
+    }
+  });
+  
+  // Get all students associated with a parent
+  app.get("/api/parents/:parentId/students", isAuthenticated, async (req, res) => {
+    try {
+      // Check if the user is the parent or has permission
+      if (req.user?.role !== 'director' && req.user?.role !== 'teacher' && 
+          req.user?.id !== parseInt(req.params.parentId)) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      const parentId = parseInt(req.params.parentId);
+      const students = await storage.getStudentsByParent(parentId);
+      res.json(students);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch students" });
+    }
+  });
+  
+  // Get parents associated with a student
+  app.get("/api/students/:studentId/parents", isAuthenticated, async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.studentId);
+      
+      // Check permissions - student can see their own parents, teacher/director can see all
+      if (req.user?.role === 'student' && req.user?.id !== studentId) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      const parents = await storage.getParentsByStudent(studentId);
+      res.json(parents);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch parents" });
+    }
+  });
+  
+  // Get comprehensive student progress for parent dashboard
+  app.get("/api/parent-portal/student/:studentId/progress", isAuthenticated, async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.studentId);
+      
+      // Permission check: must be director, teacher, the student, or a parent of the student
+      if (req.user?.role !== 'director' && req.user?.role !== 'teacher' && req.user?.id !== studentId) {
+        // Check if the user is a parent of this student
+        const parents = await storage.getParentsByStudent(studentId);
+        const isParent = parents.some(parent => parent.id === req.user?.id);
+        
+        if (!isParent) {
+          return res.status(403).json({ error: "Forbidden" });
+        }
+      }
+      
+      const progressSummary = await storage.getStudentProgressSummary(studentId);
+      res.json(progressSummary);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch student progress" });
     }
   });
 
