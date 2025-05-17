@@ -23,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, UserPlus, BookOpen, ChevronRight } from "lucide-react";
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 // Login form schema
 const loginSchema = z.object({
@@ -42,6 +43,7 @@ const registerSchema = z.object({
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [location, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
 
@@ -97,7 +99,7 @@ export default function AuthPage() {
             <div className="rounded-full bg-primary w-10 h-10 flex items-center justify-center text-white">
               <Calendar className="h-5 w-5" />
             </div>
-            <h1 className="ml-3 text-2xl font-bold text-primary">Islamic Studies</h1>
+            <h1 className="ml-3 text-2xl font-bold text-primary">Duksi App</h1>
           </div>
 
           <Card>
@@ -124,55 +126,69 @@ export default function AuthPage() {
                 </TabsList>
                 
                 <TabsContent value="login">
-                  <Form {...loginForm}>
-                    <form
-                      onSubmit={loginForm.handleSubmit(onLoginSubmit)}
-                      className="space-y-4"
-                    >
-                      <FormField
-                        control={loginForm.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="Enter your username"
-                                disabled={loginMutation.isPending} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={loginForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                type="password" 
-                                placeholder="Enter your password"
-                                disabled={loginMutation.isPending} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button 
-                        type="submit" 
-                        className="w-full"
-                        disabled={loginMutation.isPending}
+                  {showForgotPassword ? (
+                    <ForgotPasswordForm onCancel={() => setShowForgotPassword(false)} />
+                  ) : (
+                    <Form {...loginForm}>
+                      <form
+                        onSubmit={loginForm.handleSubmit(onLoginSubmit)}
+                        className="space-y-4"
                       >
-                        {loginMutation.isPending ? "Signing in..." : "Sign In"}
-                      </Button>
-                    </form>
-                  </Form>
+                        <FormField
+                          control={loginForm.control}
+                          name="username"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Username</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  placeholder="Enter your username"
+                                  disabled={loginMutation.isPending} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={loginForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  {...field} 
+                                  type="password" 
+                                  placeholder="Enter your password"
+                                  disabled={loginMutation.isPending} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                              <div className="text-right">
+                                <Button 
+                                  variant="link" 
+                                  className="p-0 h-auto text-xs text-slate-500 hover:text-primary"
+                                  onClick={() => setShowForgotPassword(true)}
+                                  type="button"
+                                >
+                                  Forgot password?
+                                </Button>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                        <Button 
+                          type="submit" 
+                          className="w-full"
+                          disabled={loginMutation.isPending}
+                        >
+                          {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                        </Button>
+                      </form>
+                    </Form>
+                  )}
                 </TabsContent>
                 
                 <TabsContent value="register">
@@ -292,10 +308,10 @@ export default function AuthPage() {
       <div className="hidden md:flex md:w-1/2 bg-primary text-white">
         <div className="flex flex-col justify-center p-12 lg:p-16">
           <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-            Islamic Studies Learning Platform
+            Duksi
           </h2>
           <p className="text-lg opacity-90 mb-8">
-            A comprehensive platform for Islamic education with personalized tracking, attendance management, and Quran memorization progress.
+            A comprehensive Islamic studies platform with personalized tracking, attendance management, and Quran memorization progress.
           </p>
           
           <div className="space-y-6">
