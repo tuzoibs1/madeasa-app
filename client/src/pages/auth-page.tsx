@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, UserPlus, BookOpen, ChevronRight } from "lucide-react";
+import { Calendar, UserPlus, BookOpen, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 // Login form schema
@@ -44,6 +44,8 @@ const registerSchema = z.object({
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [location, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
 
@@ -158,12 +160,30 @@ export default function AuthPage() {
                             <FormItem>
                               <FormLabel>Password</FormLabel>
                               <FormControl>
-                                <Input 
-                                  {...field} 
-                                  type="password" 
-                                  placeholder="Enter your password"
-                                  disabled={loginMutation.isPending} 
-                                />
+                                <div className="relative">
+                                  <Input 
+                                    {...field} 
+                                    type={showLoginPassword ? "text" : "password"} 
+                                    placeholder="Enter your password"
+                                    disabled={loginMutation.isPending} 
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 text-slate-400 hover:text-slate-600"
+                                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                  >
+                                    {showLoginPassword ? (
+                                      <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                      <Eye className="h-4 w-4" />
+                                    )}
+                                    <span className="sr-only">
+                                      {showLoginPassword ? "Hide password" : "Show password"}
+                                    </span>
+                                  </Button>
+                                </div>
                               </FormControl>
                               <FormMessage />
                               <div className="text-right">
@@ -238,12 +258,30 @@ export default function AuthPage() {
                           <FormItem>
                             <FormLabel>Password</FormLabel>
                             <FormControl>
-                              <Input 
-                                {...field} 
-                                type="password" 
-                                placeholder="Create a password"
-                                disabled={registerMutation.isPending} 
-                              />
+                              <div className="relative">
+                                <Input 
+                                  {...field} 
+                                  type={showRegisterPassword ? "text" : "password"} 
+                                  placeholder="Create a password"
+                                  disabled={registerMutation.isPending} 
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 text-slate-400 hover:text-slate-600"
+                                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                                >
+                                  {showRegisterPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                  ) : (
+                                    <Eye className="h-4 w-4" />
+                                  )}
+                                  <span className="sr-only">
+                                    {showRegisterPassword ? "Hide password" : "Show password"}
+                                  </span>
+                                </Button>
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
