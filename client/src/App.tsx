@@ -9,11 +9,17 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import AuthPage from "@/pages/auth-page";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { ThemeProvider } from "@/components/theme-provider";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Dashboards
 import DirectorDashboard from "@/pages/dashboard/director-dashboard";
 import TeacherDashboard from "@/pages/dashboard/teacher-dashboard";
 import StudentDashboard from "@/pages/dashboard/student-dashboard";
+
+// Mobile Dashboards
+import TeacherMobileDashboard from "@/pages/mobile/teacher-mobile-dashboard";
+import StudentMobileDashboard from "@/pages/mobile/student-mobile-dashboard";
+import LessonsMobile from "@/pages/mobile/lessons-mobile";
 
 // Pages
 import AttendancePage from "@/pages/attendance";
@@ -23,6 +29,8 @@ import StudentsPage from "@/pages/students";
 import TeachersPage from "@/pages/teachers";
 
 function Router() {
+  const isMobile = useIsMobile();
+  
   return (
     <Switch>
       {/* Auth page */}
@@ -34,14 +42,30 @@ function Router() {
         component={DirectorDashboard} 
         allowedRoles={["director"]} 
       />
+      
+      {/* Teacher routes - desktop vs mobile */}
       <ProtectedRoute 
         path="/teacher" 
-        component={TeacherDashboard} 
+        component={isMobile ? TeacherMobileDashboard : TeacherDashboard} 
+        allowedRoles={["teacher"]} 
+      />
+      
+      {/* Student routes - desktop vs mobile */}
+      <ProtectedRoute 
+        path="/student" 
+        component={isMobile ? StudentMobileDashboard : StudentDashboard} 
+        allowedRoles={["student"]} 
+      />
+      
+      {/* Mobile-specific routes */}
+      <ProtectedRoute 
+        path="/mobile/teacher" 
+        component={TeacherMobileDashboard} 
         allowedRoles={["teacher"]} 
       />
       <ProtectedRoute 
-        path="/student" 
-        component={StudentDashboard} 
+        path="/mobile/student" 
+        component={StudentMobileDashboard} 
         allowedRoles={["student"]} 
       />
       
