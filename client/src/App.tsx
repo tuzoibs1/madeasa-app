@@ -20,6 +20,7 @@ import StudentDashboard from "@/pages/dashboard/student-dashboard";
 import TeacherMobileDashboard from "@/pages/mobile/teacher-mobile-dashboard";
 import StudentMobileDashboard from "@/pages/mobile/student-mobile-dashboard";
 import LessonsMobile from "@/pages/mobile/lessons-mobile";
+import MemorizationMobile from "@/pages/mobile/memorization-mobile";
 
 // Pages
 import AttendancePage from "@/pages/attendance";
@@ -77,11 +78,11 @@ function Router() {
       />
       <ProtectedRoute 
         path="/memorization" 
-        component={MemorizationPage} 
+        component={isMobile ? MemorizationMobile : MemorizationPage} 
       />
       <ProtectedRoute 
         path="/lessons" 
-        component={LessonsPage} 
+        component={isMobile ? LessonsMobile : LessonsPage} 
       />
       <ProtectedRoute 
         path="/students" 
