@@ -11,6 +11,8 @@ import { Course } from "@shared/schema";
 export default function CourseDetailsPage() {
   const { courseId } = useParams();
   const [activeTab, setActiveTab] = useState("materials");
+  const { user } = useAuth();
+  const [_, navigate] = useLocation();
   
   const { data: course, isLoading, error } = useQuery({
     queryKey: ['/api/courses', courseId],
