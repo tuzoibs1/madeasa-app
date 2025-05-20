@@ -30,6 +30,7 @@ import StudentsPage from "@/pages/students";
 import TeachersPage from "@/pages/teachers";
 import AboutPage from "@/pages/about";
 import CourseDetailsPage from "@/pages/courses/course-details";
+import SubmissionsPage from "@/pages/assignments/submissions";
 
 function Router() {
   const isMobile = useIsMobile();
@@ -102,6 +103,13 @@ function Router() {
       <ProtectedRoute 
         path="/courses/:courseId" 
         component={CourseDetailsPage}
+      />
+      
+      {/* Assignment pages */}
+      <ProtectedRoute 
+        path="/assignments/:assignmentId/submissions" 
+        component={SubmissionsPage}
+        allowedRoles={["director", "teacher"]}
       />
       
       {/* Fallback to 404 */}
