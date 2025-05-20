@@ -29,6 +29,7 @@ import LessonsPage from "@/pages/lessons";
 import StudentsPage from "@/pages/students";
 import TeachersPage from "@/pages/teachers";
 import AboutPage from "@/pages/about";
+import CourseDetailsPage from "@/pages/courses/course-details";
 
 function Router() {
   const isMobile = useIsMobile();
@@ -95,6 +96,12 @@ function Router() {
         path="/teachers" 
         component={TeachersPage} 
         allowedRoles={["director"]} 
+      />
+      
+      {/* Course pages */}
+      <ProtectedRoute 
+        path="/courses/:courseId" 
+        component={CourseDetailsPage}
       />
       
       {/* Fallback to 404 */}

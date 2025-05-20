@@ -200,7 +200,7 @@ export default function MaterialList() {
                   {material.title}
                 </CardTitle>
                 <CardDescription>
-                  {new Date(material.createdAt).toLocaleDateString()}
+                  {material.createdAt ? new Date(material.createdAt).toLocaleDateString() : "Unknown date"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
