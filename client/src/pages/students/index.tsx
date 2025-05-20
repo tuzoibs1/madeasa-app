@@ -433,7 +433,7 @@ export default function StudentsPage() {
                       <SelectValue placeholder="Select Class" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Classes</SelectItem>
+                      <SelectItem value="all">All Classes</SelectItem>
                       {courses?.map((course) => (
                         <SelectItem
                           key={course.id}

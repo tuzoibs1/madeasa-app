@@ -297,7 +297,7 @@ export default function MemorizationPage() {
                             <SelectValue placeholder="Select Student" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">All Students</SelectItem>
+                            <SelectItem value="all">All Students</SelectItem>
                             {students?.map((student) => (
                               <SelectItem key={student.id} value={student.id.toString()}>
                                 {student.fullName}
