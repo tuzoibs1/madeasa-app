@@ -391,7 +391,7 @@ export default function AuthPage() {
           </div>
           
           <div className="mt-12">
-            <a href="#" className="flex items-center text-white hover:underline group">
+            <a href="/about" className="flex items-center text-white hover:underline group">
               <span className="font-semibold">Learn more about our platform</span>
               <ChevronRight className="h-5 w-5 ml-1 group-hover:translate-x-1 transition-transform" />
             </a>

@@ -28,14 +28,16 @@ import MemorizationPage from "@/pages/memorization";
 import LessonsPage from "@/pages/lessons";
 import StudentsPage from "@/pages/students";
 import TeachersPage from "@/pages/teachers";
+import AboutPage from "@/pages/about";
 
 function Router() {
   const isMobile = useIsMobile();
   
   return (
     <Switch>
-      {/* Auth page */}
+      {/* Auth and About pages */}
       <Route path="/auth" component={AuthPage} />
+      <Route path="/about" component={() => import("@/pages/about").then(mod => mod.default())} />
       
       {/* Role-specific dashboards */}
       <ProtectedRoute 
