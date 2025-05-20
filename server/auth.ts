@@ -29,13 +29,19 @@ export async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // Get the session secret from environment variables
+  const sessionSecret = process.env.SESSION_SECRET || "islamic-studies-secret-key";
+  console.log("Setting up authentication with session configuration");
+  
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "islamic-studies-secret-key",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true,
+      sameSite: 'lax'
     },
     store: storage.sessionStore,
   };
@@ -154,7 +160,17 @@ export function setupAuth(app: Express) {
   });
 
   app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (!req.isAuthenticated()) {
+      console.log("Unauthorized access attempt to /api/user - user not authenticated");
+      return res.status(401).json({ error: "Authentication required", details: "You need to log in to access this resource" });
+    }
+    
+    if (!req.user) {
+      console.log("Authenticated but no user data found in session");
+      return res.status(500).json({ error: "Session error", details: "User authenticated but no user data found" });
+    }
+    
+    console.log(`User data retrieved for user ID: ${req.user.id}`);
     res.json(req.user);
   });
 }
