@@ -2,10 +2,14 @@ import { Express, Request, Response, NextFunction } from "express";
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { storage } from './storage';
 
 export function setupFileUploads(app: Express) {
   // Create uploads directory if it doesn't exist
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
   const uploadsDir = path.join(__dirname, '..', 'uploads');
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
@@ -53,8 +57,7 @@ export function setupFileUploads(app: Express) {
         filePath: filePath,
         fileType: fileExt.replace('.', ''),
         fileSize: file.size,
-        uploadedBy: req.user!.id,
-        createdAt: new Date()
+        uploadedBy: req.user!.id
       });
 
       res.status(201).json(newMaterial);
@@ -97,7 +100,6 @@ export function setupFileUploads(app: Express) {
         fileType: fileExt.replace('.', ''),
         fileSize: file.size,
         comments: comments as string || '',
-        submittedAt: new Date(),
         status: 'submitted'
       });
 

@@ -6,7 +6,10 @@ import {
   memorizations, type Memorization, type InsertMemorization,
   lessons, type Lesson, type InsertLesson,
   events, type Event, type InsertEvent,
-  parentStudentRelations, type ParentStudentRelation, type InsertParentStudentRelation
+  parentStudentRelations, type ParentStudentRelation, type InsertParentStudentRelation,
+  materials, type Material, type InsertMaterial,
+  assignments, type Assignment, type InsertAssignment,
+  submissions, type Submission, type InsertSubmission
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, count } from "drizzle-orm";
@@ -61,6 +64,20 @@ export interface IStorage {
   getParentsByStudent(studentId: number): Promise<User[]>;
   getParentStudentRelations(parentId: number): Promise<ParentStudentRelation[]>;
   getStudentProgressSummary(studentId: number): Promise<any>; // Comprehensive summary for parent portal
+  
+  // Materials & Assignments
+  createMaterial(material: InsertMaterial): Promise<Material>;
+  getMaterialsByCourse(courseId: number): Promise<Material[]>;
+  getMaterial(id: number): Promise<Material | undefined>;
+  
+  createAssignment(assignment: InsertAssignment): Promise<Assignment>;
+  getAssignmentsByCourse(courseId: number): Promise<Assignment[]>;
+  getAssignment(id: number): Promise<Assignment | undefined>;
+  
+  createSubmission(submission: InsertSubmission): Promise<Submission>;
+  getSubmissionsByAssignment(assignmentId: number): Promise<Submission[]>;
+  getSubmissionsByStudent(studentId: number): Promise<Submission[]>;
+  updateSubmissionGrade(id: number, grade: number, feedback: string, gradedBy: number): Promise<Submission>;
   
   // Session store
   sessionStore: any;
@@ -352,6 +369,96 @@ export class DatabaseStorage implements IStorage {
       recentAttendance,
       recentMemorizations: memorizationRecords.slice(0, 5)
     };
+  }
+
+  // Materials operations
+  async createMaterial(insertMaterial: InsertMaterial): Promise<Material> {
+    const [material] = await db
+      .insert(materials)
+      .values(insertMaterial)
+      .returning();
+    return material;
+  }
+
+  async getMaterialsByCourse(courseId: number): Promise<Material[]> {
+    return await db
+      .select()
+      .from(materials)
+      .where(eq(materials.courseId, courseId))
+      .orderBy(desc(materials.createdAt));
+  }
+
+  async getMaterial(id: number): Promise<Material | undefined> {
+    const [material] = await db
+      .select()
+      .from(materials)
+      .where(eq(materials.id, id));
+    return material;
+  }
+
+  // Assignments operations
+  async createAssignment(insertAssignment: InsertAssignment): Promise<Assignment> {
+    const [assignment] = await db
+      .insert(assignments)
+      .values(insertAssignment)
+      .returning();
+    return assignment;
+  }
+
+  async getAssignmentsByCourse(courseId: number): Promise<Assignment[]> {
+    return await db
+      .select()
+      .from(assignments)
+      .where(eq(assignments.courseId, courseId))
+      .orderBy(desc(assignments.createdAt));
+  }
+
+  async getAssignment(id: number): Promise<Assignment | undefined> {
+    const [assignment] = await db
+      .select()
+      .from(assignments)
+      .where(eq(assignments.id, id));
+    return assignment;
+  }
+
+  // Submissions operations
+  async createSubmission(insertSubmission: InsertSubmission): Promise<Submission> {
+    const [submission] = await db
+      .insert(submissions)
+      .values(insertSubmission)
+      .returning();
+    return submission;
+  }
+
+  async getSubmissionsByAssignment(assignmentId: number): Promise<Submission[]> {
+    return await db
+      .select()
+      .from(submissions)
+      .where(eq(submissions.assignmentId, assignmentId))
+      .orderBy(desc(submissions.submittedAt));
+  }
+
+  async getSubmissionsByStudent(studentId: number): Promise<Submission[]> {
+    return await db
+      .select()
+      .from(submissions)
+      .where(eq(submissions.studentId, studentId))
+      .orderBy(desc(submissions.submittedAt));
+  }
+
+  async updateSubmissionGrade(id: number, grade: number, feedback: string, gradedBy: number): Promise<Submission> {
+    const [updatedSubmission] = await db
+      .update(submissions)
+      .set({
+        grade,
+        feedback,
+        status: 'graded',
+        gradedAt: new Date(),
+        gradedBy
+      })
+      .where(eq(submissions.id, id))
+      .returning();
+    return updatedSubmission;
   }
 }
 

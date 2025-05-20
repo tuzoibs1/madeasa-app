@@ -146,6 +146,9 @@ export type InsertMemorization = z.infer<typeof insertMemorizationSchema>;
 export type InsertLesson = z.infer<typeof insertLessonSchema>;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type InsertParentStudentRelation = z.infer<typeof insertParentStudentRelationSchema>;
+export type InsertMaterial = z.infer<typeof insertMaterialSchema>;
+export type InsertAssignment = z.infer<typeof insertAssignmentSchema>;
+export type InsertSubmission = z.infer<typeof insertSubmissionSchema>;
 
 // Types for selection
 export type User = typeof users.$inferSelect;
@@ -156,6 +159,9 @@ export type Memorization = typeof memorizations.$inferSelect;
 export type Lesson = typeof lessons.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type ParentStudentRelation = typeof parentStudentRelations.$inferSelect;
+export type Material = typeof materials.$inferSelect;
+export type Assignment = typeof assignments.$inferSelect;
+export type Submission = typeof submissions.$inferSelect;
 
 // Extended schemas for login
 export const loginSchema = z.object({

@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
+import { setupFileUploads } from "./uploads";
 import { z } from "zod";
 import {
   insertAttendanceSchema,
@@ -10,7 +11,9 @@ import {
   insertMemorizationSchema,
   insertEventSchema,
   insertLessonSchema,
-  insertParentStudentRelationSchema
+  insertParentStudentRelationSchema,
+  insertAssignmentSchema,
+  insertMaterialSchema
 } from "@shared/schema";
 
 // Middleware to check if user is authenticated
@@ -39,6 +42,9 @@ const checkRole = (roles: string[]) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Sets up /api/register, /api/login, /api/logout, /api/user
   setupAuth(app);
+  
+  // Setup file upload functionality
+  setupFileUploads(app);
 
   // Define API routes
   
@@ -327,6 +333,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(progressSummary);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch student progress" });
+    }
+  });
+  
+  // Assignments routes
+  app.post("/api/assignments", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const validData = insertAssignmentSchema.parse(req.body);
+      const assignment = await storage.createAssignment(validData);
+      res.status(201).json(assignment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to create assignment" });
+    }
+  });
+
+  app.get("/api/courses/:courseId/assignments", isAuthenticated, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const assignments = await storage.getAssignmentsByCourse(courseId);
+      res.json(assignments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch assignments" });
+    }
+  });
+
+  app.get("/api/assignments/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const assignment = await storage.getAssignment(id);
+      if (!assignment) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+      res.json(assignment);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch assignment" });
+    }
+  });
+
+  app.get("/api/assignments/:assignmentId/submissions", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const assignmentId = parseInt(req.params.assignmentId);
+      const submissions = await storage.getSubmissionsByAssignment(assignmentId);
+      res.json(submissions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch submissions" });
+    }
+  });
+
+  app.get("/api/students/:studentId/submissions", isAuthenticated, async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.studentId);
+      
+      // Students can only view their own submissions
+      if (req.user?.role === 'student' && req.user.id !== studentId) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      const submissions = await storage.getSubmissionsByStudent(studentId);
+      res.json(submissions);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch submissions" });
+    }
+  });
+
+  app.post("/api/submissions/:id/grade", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { grade, feedback } = req.body;
+      
+      if (grade === undefined || !feedback) {
+        return res.status(400).json({ error: "Grade and feedback are required" });
+      }
+      
+      const updatedSubmission = await storage.updateSubmissionGrade(
+        id, 
+        grade, 
+        feedback, 
+        req.user!.id
+      );
+      
+      res.json(updatedSubmission);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to grade submission" });
+    }
+  });
+
+  // Materials routes
+  app.get("/api/courses/:courseId/materials", isAuthenticated, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.courseId);
+      const materials = await storage.getMaterialsByCourse(courseId);
+      res.json(materials);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch materials" });
+    }
+  });
+
+  app.get("/api/materials/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const material = await storage.getMaterial(id);
+      if (!material) {
+        return res.status(404).json({ error: "Material not found" });
+      }
+      res.json(material);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch material" });
     }
   });
   
