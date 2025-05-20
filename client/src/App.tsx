@@ -37,7 +37,7 @@ function Router() {
     <Switch>
       {/* Auth and About pages */}
       <Route path="/auth" component={AuthPage} />
-      <Route path="/about" component={() => import("@/pages/about").then(mod => mod.default())} />
+      <Route path="/about" component={AboutPage} />
       
       {/* Role-specific dashboards */}
       <ProtectedRoute 
