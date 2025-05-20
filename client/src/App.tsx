@@ -103,6 +103,7 @@ function Router() {
       <ProtectedRoute 
         path="/courses/:courseId" 
         component={CourseDetailsPage}
+        allowedRoles={["director", "teacher", "student"]}
       />
       
       {/* Assignment pages */}
