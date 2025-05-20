@@ -4,6 +4,7 @@ import { z } from "zod";
 
 // Enums
 export const userRoleEnum = pgEnum('user_role', ['director', 'teacher', 'student', 'parent']);
+export const submissionStatusEnum = pgEnum('submission_status', ['submitted', 'graded', 'returned']);
 
 // Table definitions
 export const users = pgTable("users", {
@@ -84,6 +85,45 @@ export const parentStudentRelations = pgTable("parent_student_relations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const materials = pgTable("materials", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  filePath: text("file_path").notNull(),
+  fileType: text("file_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  uploadedBy: integer("uploaded_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const assignments = pgTable("assignments", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => courses.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  dueDate: timestamp("due_date"),
+  totalPoints: integer("total_points").notNull().default(100),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+});
+
+export const submissions = pgTable("submissions", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id").references(() => assignments.id).notNull(),
+  studentId: integer("student_id").references(() => users.id).notNull(),
+  filePath: text("file_path").notNull(),
+  fileType: text("file_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  comments: text("comments"),
+  submittedAt: timestamp("submitted_at").defaultNow(),
+  grade: integer("grade"),
+  feedback: text("feedback"),
+  status: submissionStatusEnum("status").notNull().default('submitted'),
+  gradedAt: timestamp("graded_at"),
+  gradedBy: integer("graded_by").references(() => users.id),
+});
+
 // Zod schemas for validation and insertion
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true, createdAt: true });
@@ -93,6 +133,9 @@ export const insertMemorizationSchema = createInsertSchema(memorizations).omit({
 export const insertLessonSchema = createInsertSchema(lessons).omit({ id: true, createdAt: true });
 export const insertEventSchema = createInsertSchema(events).omit({ id: true });
 export const insertParentStudentRelationSchema = createInsertSchema(parentStudentRelations).omit({ id: true, createdAt: true });
+export const insertMaterialSchema = createInsertSchema(materials).omit({ id: true, createdAt: true });
+export const insertAssignmentSchema = createInsertSchema(assignments).omit({ id: true, createdAt: true });
+export const insertSubmissionSchema = createInsertSchema(submissions).omit({ id: true, submittedAt: true, gradedAt: true });
 
 // Types for insertion
 export type InsertUser = z.infer<typeof insertUserSchema>;
