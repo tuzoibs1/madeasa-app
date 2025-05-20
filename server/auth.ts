@@ -72,28 +72,78 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).send("Username already exists");
+      // Validate required fields
+      if (!req.body.username || !req.body.password || !req.body.fullName) {
+        return res.status(400).json({ 
+          error: "Missing required fields", 
+          details: "Username, password, and full name are required" 
+        });
       }
 
+      // Check for existing user
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({ 
+          error: "Username already exists",
+          details: "Please choose a different username"
+        });
+      }
+
+      // Validate password strength
+      if (req.body.password.length < 8) {
+        return res.status(400).json({
+          error: "Password too weak",
+          details: "Password must be at least 8 characters long"
+        });
+      }
+
+      // Create the user with hashed password
       const hashedPassword = await hashPassword(req.body.password);
       const user = await storage.createUser({
         ...req.body,
         password: hashedPassword,
       });
 
+      // Log in the newly created user
       req.login(user, (err) => {
-        if (err) return next(err);
+        if (err) {
+          console.error("Registration login error:", err);
+          return res.status(500).json({ 
+            error: "Account created but login failed",
+            details: "Your account was created successfully, but we couldn't log you in automatically. Please try logging in."
+          });
+        }
         res.status(201).json(user);
       });
     } catch (err) {
-      next(err);
+      console.error("Registration error:", err);
+      res.status(500).json({ 
+        error: "Registration failed",
+        details: "An unexpected error occurred during registration"
+      });
     }
   });
 
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.status(200).json(req.user);
+  app.post("/api/login", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        console.error("Login error:", err);
+        return res.status(500).json({ error: "Authentication error occurred" });
+      }
+      
+      if (!user) {
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+      
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          console.error("Session creation error:", loginErr);
+          return res.status(500).json({ error: "Failed to create session" });
+        }
+        
+        return res.status(200).json(user);
+      });
+    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {

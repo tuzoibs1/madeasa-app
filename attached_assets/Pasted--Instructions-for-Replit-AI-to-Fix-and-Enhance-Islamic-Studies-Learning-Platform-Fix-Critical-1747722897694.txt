@@ -1,0 +1,59 @@
+# Instructions for Replit AI to Fix and Enhance Islamic Studies Learning Platform
+
+## Fix Critical Authentication Issues
+
+1. Debug and repair the authentication system that's returning 401 Unauthorized errors:
+   - Check JWT token generation and validation in src/utils/auth.py
+   - Verify PostgreSQL database connection parameters in environment variables
+   - Ensure backend is binding to 0.0.0.0:8080 in main.sh script
+   - Add proper error logging for authentication failures
+
+2. Implement better error handling:
+   - Add specific error messages for different authentication failure scenarios
+   - Implement proper try/catch blocks in API routes
+   - Return meaningful HTTP status codes with descriptive messages
+
+## Build These Core Features
+
+1. Role-Based Dashboards:
+   - Director Dashboard: School overview with teacher/student metrics, billing status
+   - Teacher Dashboard: Class attendance tracker, student progress view, syllabus editor
+   - Student Dashboard: Personal attendance history, memorization progress, upcoming lessons
+
+2. Attendance System:
+   - Calendar view for tracking daily attendance
+   - Check-in/check-out functionality with timestamps
+   - Attendance reports with filtering by date range and student
+   - Absence notification system
+
+3. Quran Memorization Tracker:
+   - Visual progress indicators for memorized verses
+   - Recording system for new memorizations
+   - Review scheduling based on spaced repetition
+   - Teacher assessment and verification tools
+
+4. User Management:
+   - User profile management with settings
+   - Password reset functionality
+   - Account activation workflow
+   - User search and filtering
+
+## Technical Improvements
+
+1. Application Stability:
+   - Configure for Replit's "Always On" feature
+   - Implement proper database connection pooling
+   - Add comprehensive error logging
+   - Create automated health checks
+
+2. Performance Optimization:
+   - Implement caching for frequently accessed data
+   - Optimize database queries
+   - Add loading states for asynchronous operations
+   - Implement pagination for large data sets
+
+3. Security Enhancements:
+   - Add rate limiting for authentication attempts
+   - Implement proper input sanitization
+   - Set secure HTTP headers
+   - Add CSRF protection
