@@ -1,0 +1,71 @@
+# Islamic Studies Learning Platform (Duksi App) Testing Prompt
+
+## Application Overview
+I've built an Islamic Studies Learning Platform (Duksi App) that provides a comprehensive educational ecosystem for students, teachers, and administrators. I need you to test its functionality and give me detailed feedback.
+
+## Testing Instructions
+
+### 1. Authentication Testing
+- Try logging in with these credentials:
+  - Username: director1
+  - Password: password123
+  - Expected result: Should redirect to the Director Dashboard
+- Test user registration with a new account (if registration is open)
+- Test logout functionality
+- Test role-specific access controls
+
+### 2. Role-Based Dashboard Testing
+- Director Dashboard:
+  - Check school overview metrics (teacher/student counts, course statistics)
+  - Verify administrator controls and permissions
+  - Test teacher/student management interfaces
+
+- Teacher Dashboard:
+  - Verify class attendance tracking functionality
+  - Test student progress visualization
+  - Check syllabus editing capabilities
+  - Test assignment creation and grading features
+
+- Student Dashboard:
+  - Check personal attendance history
+  - Verify memorization progress tracking
+  - Test assignment submission functionality
+  - Confirm access to course materials
+
+### 3. Core Feature Testing
+- Attendance System:
+  - Test calendar view for tracking attendance
+  - Try recording attendance for students
+  - Generate and view attendance reports
+
+- Quran Memorization Tracker:
+  - Test recording new memorization progress
+  - Verify visual progress indicators
+  - Check teacher verification tools for memorization
+
+- File Upload System:
+  - Test uploading course materials
+  - Test student assignment submissions
+  - Verify file access controls by role
+
+### 4. User Experience Testing
+- Check responsive design on different screen sizes
+  - Mobile view
+  - Tablet view
+  - Desktop view
+- Test navigation flows between sections
+- Assess loading states for asynchronous operations
+- Evaluate UI/UX design, colors, and accessibility
+
+## Feedback Instructions
+After testing, please provide detailed feedback on:
+
+1. What works well
+2. Any bugs or issues encountered (with reproduction steps)
+3. User interface and experience assessment
+4. Suggestions for improvement
+5. Features that could be added in future updates
+
+I'm particularly interested in knowing if the authentication system works smoothly, if the role-based dashboards display the right information, and if core features like attendance tracking and Quran memorization progress are intuitive to use.
+
+Thank you for your thorough testing and feedback!
