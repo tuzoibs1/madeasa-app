@@ -346,7 +346,7 @@ export default function AuthPage() {
       <div className="hidden md:flex md:w-1/2 bg-primary text-white">
         <div className="flex flex-col justify-center p-12 lg:p-16">
           <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-            Duksi
+            MadrasaApp
           </h2>
           <p className="text-lg opacity-90 mb-8">
             A comprehensive Islamic studies platform with personalized tracking, attendance management, and Quran memorization progress.
