@@ -101,7 +101,7 @@ export default function AuthPage() {
             <div className="rounded-full bg-primary w-10 h-10 flex items-center justify-center text-white">
               <Calendar className="h-5 w-5" />
             </div>
-            <h1 className="ml-3 text-2xl font-bold text-primary">Duksi App</h1>
+            <h1 className="ml-3 text-2xl font-bold text-primary">MadrasaApp</h1>
           </div>
 
           <Card>

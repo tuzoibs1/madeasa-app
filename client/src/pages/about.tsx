@@ -7,7 +7,7 @@ import { Book, Users, Calendar, Award, CheckSquare, Star, ArrowLeft } from "luci
 
 export default function AboutPage() {
   return (
-    <Layout title="About Duksi App">
+    <Layout title="About MadrasaApp">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center mb-6">
           <Button variant="ghost" size="sm" asChild className="mr-2">
@@ -20,7 +20,7 @@ export default function AboutPage() {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-indigo-600 text-transparent bg-clip-text mb-2">
-            Welcome to Duksi App
+            Welcome to MadrasaApp
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-300">
             A comprehensive Islamic Studies Learning Platform for students, teachers, and administrators
@@ -41,7 +41,7 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
-                  Duksi App is an advanced Islamic Studies Learning Platform designed to provide a comprehensive
+                  MadrasaApp is an advanced Islamic Studies Learning Platform designed to provide a comprehensive
                   and engaging educational ecosystem for students, teachers, and administrators. Our platform
                   combines traditional Islamic education with modern technology to create an effective and
                   immersive learning experience.
@@ -122,7 +122,7 @@ export default function AboutPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
-                  At Duksi App, we believe in combining traditional Islamic education with modern teaching methods.
+                  At MadrasaApp, we believe in combining traditional Islamic education with modern teaching methods.
                   Our main goals are:
                 </p>
                 
@@ -185,7 +185,7 @@ export default function AboutPage() {
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-4">Ready to get started?</h2>
               <p className="mb-6 max-w-lg mx-auto">
-                Join thousands of students and teachers who are already using Duksi App
+                Join thousands of students and teachers who are already using MadrasaApp
                 to enhance their Islamic education journey.
               </p>
               <Button size="lg" asChild>
