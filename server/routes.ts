@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { setupFileUploads } from "./uploads";
+import { setupNotificationRoutes, notifyParentsAboutStudentAbsence, notifyParentsAboutNewAssignment, notifyParentsAboutMemorizationProgress } from "./notifications";
 import { z } from "zod";
 import {
   insertAttendanceSchema,
@@ -45,6 +46,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup file upload functionality
   setupFileUploads(app);
+  
+  // Setup SMS notification functionality
+  setupNotificationRoutes(app);
 
   // Define API routes
   
@@ -113,6 +117,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validData = insertAttendanceSchema.parse(req.body);
       const attendance = await storage.createAttendance(validData);
+      
+      // Send SMS notification to parents if student is absent
+      if (validData.status === 'absent') {
+        const currentDate = new Date().toLocaleDateString();
+        await notifyParentsAboutStudentAbsence(validData.studentId, currentDate);
+      }
+      
       res.status(201).json(attendance);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -443,6 +454,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validData = insertAssignmentSchema.parse(req.body);
       const assignment = await storage.createAssignment(validData);
+      
+      // Send SMS notification to parents about new assignment
+      await notifyParentsAboutNewAssignment(validData.courseId, validData.title);
+      
       res.status(201).json(assignment);
     } catch (error) {
       if (error instanceof z.ZodError) {
