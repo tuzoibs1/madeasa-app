@@ -77,57 +77,11 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
-    try {
-      // Validate required fields
-      if (!req.body.username || !req.body.password || !req.body.fullName) {
-        return res.status(400).json({ 
-          error: "Missing required fields", 
-          details: "Username, password, and full name are required" 
-        });
-      }
-
-      // Check for existing user
-      const existingUser = await storage.getUserByUsername(req.body.username);
-      if (existingUser) {
-        return res.status(400).json({ 
-          error: "Username already exists",
-          details: "Please choose a different username"
-        });
-      }
-
-      // Validate password strength
-      if (req.body.password.length < 8) {
-        return res.status(400).json({
-          error: "Password too weak",
-          details: "Password must be at least 8 characters long"
-        });
-      }
-
-      // Create the user with hashed password
-      const hashedPassword = await hashPassword(req.body.password);
-      const user = await storage.createUser({
-        ...req.body,
-        password: hashedPassword,
-      });
-
-      // Log in the newly created user
-      req.login(user, (err) => {
-        if (err) {
-          console.error("Registration login error:", err);
-          return res.status(500).json({ 
-            error: "Account created but login failed",
-            details: "Your account was created successfully, but we couldn't log you in automatically. Please try logging in."
-          });
-        }
-        res.status(201).json(user);
-      });
-    } catch (err) {
-      console.error("Registration error:", err);
-      res.status(500).json({ 
-        error: "Registration failed",
-        details: "An unexpected error occurred during registration"
-      });
-    }
+    // Disable public registration - accounts must be created by administrators
+    return res.status(403).json({
+      error: "Public registration disabled",
+      details: "Account creation is restricted. Please contact your administrator to create an account."
+    });
   });
 
   app.post("/api/login", (req, res, next) => {

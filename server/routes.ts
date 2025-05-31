@@ -262,6 +262,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch users" });
     }
   });
+
+  // Controlled user creation - Only directors can create teachers, students, and parents
+  app.post("/api/users/create", checkRole(['director']), async (req, res) => {
+    try {
+      const { username, password, fullName, role, email } = req.body;
+      
+      // Validate required fields
+      if (!username || !password || !fullName || !role) {
+        return res.status(400).json({ 
+          error: "Missing required fields",
+          details: "Username, password, full name, and role are required"
+        });
+      }
+
+      // Validate role - directors can create any role except other directors
+      const allowedRoles = ['teacher', 'student', 'parent'];
+      if (!allowedRoles.includes(role)) {
+        return res.status(400).json({
+          error: "Invalid role",
+          details: "Directors can only create teachers, students, and parents"
+        });
+      }
+
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({
+          error: "Username already exists",
+          details: "Please choose a different username"
+        });
+      }
+
+      // Create user with hashed password
+      const { hashPassword } = await import('./auth');
+      const hashedPassword = await hashPassword(password);
+      
+      const newUser = await storage.createUser({
+        username,
+        password: hashedPassword,
+        fullName,
+        role,
+        email: email || null
+      });
+
+      // Remove password from response
+      const { password: _, ...userResponse } = newUser;
+      res.status(201).json(userResponse);
+    } catch (error) {
+      console.error("User creation error:", error);
+      res.status(500).json({
+        error: "Failed to create user",
+        details: "An error occurred while creating the user account"
+      });
+    }
+  });
+
+  // Teachers can create students and parents for their classes only
+  app.post("/api/users/create-student-parent", checkRole(['teacher']), async (req, res) => {
+    try {
+      const { username, password, fullName, role, email } = req.body;
+      
+      // Teachers can only create students and parents
+      const allowedRoles = ['student', 'parent'];
+      if (!allowedRoles.includes(role)) {
+        return res.status(403).json({
+          error: "Insufficient permissions",
+          details: "Teachers can only create student and parent accounts"
+        });
+      }
+
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({
+          error: "Username already exists",
+          details: "Please choose a different username"
+        });
+      }
+
+      // Create user with hashed password
+      const { hashPassword } = await import('./auth');
+      const hashedPassword = await hashPassword(password);
+      
+      const newUser = await storage.createUser({
+        username,
+        password: hashedPassword,
+        fullName,
+        role,
+        email: email || null
+      });
+
+      // Remove password from response
+      const { password: _, ...userResponse } = newUser;
+      res.status(201).json(userResponse);
+    } catch (error) {
+      console.error("User creation error:", error);
+      res.status(500).json({
+        error: "Failed to create user",
+        details: "An error occurred while creating the user account"
+      });
+    }
+  });
   
   // Parent Portal Routes
   

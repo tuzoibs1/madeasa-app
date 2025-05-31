@@ -1,0 +1,78 @@
+🔧 Replit Prompt: MadrasaApp Testing, Evaluation & Feature Expansion
+
+Project Title:
+MadrasaApp – Islamic Studies Learning Platform
+
+⸻
+
+✅ Project Overview
+
+I’ve built MadrasaApp, a comprehensive Islamic education platform that supports Directors, Teachers, Students, and Parents with role-based features. The app includes:
+	•	Role-based access control (Director, Teacher, Student, Parent)
+	•	Attendance tracking & calendar reports
+	•	Quran memorization progress tracking
+	•	Assignment and submission system
+	•	Course material uploads
+	•	Parent portal with student progress
+	•	Full authentication system with Passport.js and session persistence
+
+⸻
+
+🖥️ Technical Stack
+	•	Backend: Node.js + Express (TypeScript), PostgreSQL (via Drizzle ORM), Passport.js authentication
+	•	Frontend: React with Tailwind CSS, protected routing, role-specific dashboards
+	•	Hosting: Replit, currently running on port 5000
+	•	Login Credentials for Testing:
+	•	Role: Director
+	•	Username: director1
+	•	Password: password123
+
+⸻
+
+🧪 Testing Instructions
+
+Please test and evaluate the following core features:
+	1.	Authentication System
+Log in using provided credentials. Confirm role-based redirection and logout functionality.
+	2.	Director Dashboard
+Review school overview, user management, course creation, and statistics.
+	3.	Attendance Tracking
+Mark attendance, review history by date or student, and check report generation.
+	4.	Quran Memorization Tracker
+Test progress tracking, visual progress indicators, and teacher verification.
+	5.	Assignment Management
+Create assignments, attach files, test student submission and teacher grading.
+	6.	General UX/UI
+Evaluate responsiveness on mobile/desktop, loading speed, dashboard navigation, and visual consistency.
+
+⸻
+
+🚧 Upcoming Features (To Be Built – Give Feedback / Plan Integration)
+	7.	🔴 Live Classroom Sessions (Teachers → Students)
+	•	Add real-time class sessions using Jitsi Meet, Zoom, or WebRTC.
+	•	Allow teachers to schedule sessions tied to course calendar.
+	•	Auto-show “Join Class” button when class is live.
+	•	Optional: Store recordings and session metadata.
+	8.	📲 Live SMS Text Notifications (To Parents)
+	•	Automatically send texts when:
+	•	New lesson or assignment is posted
+	•	Class is starting
+	•	Student is absent or makes memorization progress
+	•	Integrate with Twilio API for SMS delivery
+	•	Include a settings panel for notification preferences per parent
+	9.	🔐 Controlled Account Creation Flow
+	•	Only Directors can:
+	•	Create user accounts for their school (Teachers, Students, Parents)
+	•	Teachers can:
+	•	Create/invite Students or Parents only for their classes
+	•	Self-registration should be disabled
+	•	Add necessary backend validation + protected route middleware
+
+⸻
+
+📋 Evaluation Criteria
+	•	Does the current app provide a solid educational experience?
+	•	Is the Islamic education use-case well addressed (Quran, memorization, progress tracking)?
+	•	Are dashboards clean and understandable per role?
+	•	How secure is the app (role logic, session handling, password practices)?
+	•	Is the proposed implementation plan for upcoming features technically sound?
