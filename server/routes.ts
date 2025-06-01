@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { setupFileUploads } from "./uploads";
 import { setupNotificationRoutes, notifyParentsAboutStudentAbsence, notifyParentsAboutNewAssignment, notifyParentsAboutMemorizationProgress } from "./notifications";
+import { setupClassroomRoutes } from "./classroom";
 import { z } from "zod";
 import {
   insertAttendanceSchema,
@@ -49,6 +50,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup SMS notification functionality
   setupNotificationRoutes(app);
+  
+  // Setup live classroom functionality
+  setupClassroomRoutes(app);
 
   // Define API routes
   
