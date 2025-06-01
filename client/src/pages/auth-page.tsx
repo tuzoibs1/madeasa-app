@@ -21,8 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, UserPlus, BookOpen, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { Calendar, BookOpen, ChevronRight, Eye, EyeOff } from "lucide-react";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
 // Login form schema
@@ -31,23 +30,11 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-// Registration form schema
-const registerSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  fullName: z.string().min(1, "Full name is required"),
-  role: z.enum(["director", "teacher", "student"], {
-    required_error: "Please select a role",
-  }),
-});
-
 export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState("login");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [location, navigate] = useLocation();
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user, loginMutation } = useAuth();
 
   // Initialize login form
   const loginForm = useForm<z.infer<typeof loginSchema>>({
@@ -58,25 +45,9 @@ export default function AuthPage() {
     },
   });
 
-  // Initialize registration form
-  const registerForm = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-      fullName: "",
-      role: "student",
-    },
-  });
-
   // Handle login form submission
   function onLoginSubmit(values: z.infer<typeof loginSchema>) {
     loginMutation.mutate(values);
-  }
-
-  // Handle registration form submission
-  function onRegisterSubmit(values: z.infer<typeof registerSchema>) {
-    registerMutation.mutate(values);
   }
 
   // Redirect if user is already logged in
@@ -107,236 +78,100 @@ export default function AuthPage() {
           <Card>
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-bold">
-                {activeTab === "login" ? "Welcome back" : "Create an account"}
+                Welcome back
               </CardTitle>
               <CardDescription>
-                {activeTab === "login"
-                  ? "Enter your credentials to sign in"
-                  : "Fill in your details to get started"}
+                Enter your credentials to sign in to MadrasaApp
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs
-                defaultValue="login"
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="register">Register</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login">
-                  {showForgotPassword ? (
-                    <ForgotPasswordForm onCancel={() => setShowForgotPassword(false)} />
-                  ) : (
-                    <Form {...loginForm}>
-                      <form
-                        onSubmit={loginForm.handleSubmit(onLoginSubmit)}
-                        className="space-y-4"
-                      >
-                        <FormField
-                          control={loginForm.control}
-                          name="username"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Username</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="Enter your username"
-                                  disabled={loginMutation.isPending} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={loginForm.control}
-                          name="password"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Password</FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Input 
-                                    {...field} 
-                                    type={showLoginPassword ? "text" : "password"} 
-                                    placeholder="Enter your password"
-                                    disabled={loginMutation.isPending} 
-                                  />
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-0 top-0 h-full px-3 py-2 text-slate-400 hover:text-slate-600"
-                                    onClick={() => setShowLoginPassword(!showLoginPassword)}
-                                  >
-                                    {showLoginPassword ? (
-                                      <EyeOff className="h-4 w-4" />
-                                    ) : (
-                                      <Eye className="h-4 w-4" />
-                                    )}
-                                    <span className="sr-only">
-                                      {showLoginPassword ? "Hide password" : "Show password"}
-                                    </span>
-                                  </Button>
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                              <div className="text-right">
-                                <Button 
-                                  variant="link" 
-                                  className="p-0 h-auto text-xs text-slate-500 hover:text-primary"
-                                  onClick={() => setShowForgotPassword(true)}
-                                  type="button"
-                                >
-                                  Forgot password?
-                                </Button>
-                              </div>
-                            </FormItem>
-                          )}
-                        />
-                        <Button 
-                          type="submit" 
-                          className="w-full"
-                          disabled={loginMutation.isPending}
-                        >
-                          {loginMutation.isPending ? "Signing in..." : "Sign In"}
-                        </Button>
-                      </form>
-                    </Form>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="register">
-                  <Form {...registerForm}>
-                    <form
-                      onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
-                      className="space-y-4"
-                    >
-                      <FormField
-                        control={registerForm.control}
-                        name="fullName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
+              {showForgotPassword ? (
+                <ForgotPasswordForm onCancel={() => setShowForgotPassword(false)} />
+              ) : (
+                <Form {...loginForm}>
+                  <form
+                    onSubmit={loginForm.handleSubmit(onLoginSubmit)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={loginForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <Input 
+                              {...field} 
+                              placeholder="Enter your username"
+                              disabled={loginMutation.isPending} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
                               <Input 
                                 {...field} 
-                                placeholder="Enter your full name"
-                                disabled={registerMutation.isPending} 
+                                type={showLoginPassword ? "text" : "password"} 
+                                placeholder="Enter your password"
+                                disabled={loginMutation.isPending} 
                               />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={registerForm.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="Choose a username"
-                                disabled={registerMutation.isPending} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={registerForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input 
-                                  {...field} 
-                                  type={showRegisterPassword ? "text" : "password"} 
-                                  placeholder="Create a password"
-                                  disabled={registerMutation.isPending} 
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="absolute right-0 top-0 h-full px-3 py-2 text-slate-400 hover:text-slate-600"
-                                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                                >
-                                  {showRegisterPassword ? (
-                                    <EyeOff className="h-4 w-4" />
-                                  ) : (
-                                    <Eye className="h-4 w-4" />
-                                  )}
-                                  <span className="sr-only">
-                                    {showRegisterPassword ? "Hide password" : "Show password"}
-                                  </span>
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={registerForm.control}
-                        name="role"
-                        render={({ field }) => (
-                          <FormItem className="space-y-1">
-                            <FormLabel>Role</FormLabel>
-                            <div className="grid grid-cols-3 gap-2">
                               <Button
                                 type="button"
-                                variant={field.value === "student" ? "default" : "outline"}
-                                className={field.value === "student" ? "bg-primary" : ""}
-                                onClick={() => field.onChange("student")}
-                                disabled={registerMutation.isPending}
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-3 py-2 text-slate-400 hover:text-slate-600"
+                                onClick={() => setShowLoginPassword(!showLoginPassword)}
                               >
-                                Student
-                              </Button>
-                              <Button
-                                type="button"
-                                variant={field.value === "teacher" ? "default" : "outline"}
-                                className={field.value === "teacher" ? "bg-primary" : ""}
-                                onClick={() => field.onChange("teacher")}
-                                disabled={registerMutation.isPending}
-                              >
-                                Teacher
-                              </Button>
-                              <Button
-                                type="button"
-                                variant={field.value === "director" ? "default" : "outline"}
-                                className={field.value === "director" ? "bg-primary" : ""}
-                                onClick={() => field.onChange("director")}
-                                disabled={registerMutation.isPending}
-                              >
-                                Director
+                                {showLoginPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                                <span className="sr-only">
+                                  {showLoginPassword ? "Hide password" : "Show password"}
+                                </span>
                               </Button>
                             </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button 
-                        type="submit" 
-                        className="w-full"
-                        disabled={registerMutation.isPending}
-                      >
-                        {registerMutation.isPending ? "Creating account..." : "Create Account"}
-                      </Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-              </Tabs>
+                          </FormControl>
+                          <FormMessage />
+                          <div className="text-right">
+                            <Button 
+                              variant="link" 
+                              className="p-0 h-auto text-xs text-slate-500 hover:text-primary"
+                              onClick={() => setShowForgotPassword(true)}
+                              type="button"
+                            >
+                              Forgot password?
+                            </Button>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full"
+                      disabled={loginMutation.isPending}
+                    >
+                      {loginMutation.isPending ? "Signing in..." : "Sign In"}
+                    </Button>
+                  </form>
+                </Form>
+              )}
+              
+              <div className="mt-6 text-center">
+                <p className="text-sm text-slate-600">
+                  Need an account? Contact your administrator to create one for you.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -355,7 +190,7 @@ export default function AuthPage() {
           <div className="space-y-6">
             <div className="flex items-start">
               <div className="mr-4 bg-white bg-opacity-20 rounded-full p-2">
-                <UserPlus className="h-6 w-6" />
+                <Calendar className="h-6 w-6" />
               </div>
               <div>
                 <h3 className="font-semibold text-xl mb-1">Role-Based Access</h3>
