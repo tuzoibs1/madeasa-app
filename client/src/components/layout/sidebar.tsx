@@ -9,7 +9,8 @@ import {
   UserPlus, 
   Settings,
   LogOut,
-  BarChart3
+  BarChart3,
+  TestTube
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -221,7 +222,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         <div className="p-4 border-t border-slate-200 absolute bottom-0 w-full">
           <div className="flex items-center">
             <Avatar>
-              <AvatarImage src={user?.profilePicture} />
+              <AvatarImage src={user?.profilePicture || undefined} />
               <AvatarFallback>{user?.fullName ? getInitials(user.fullName) : "US"}</AvatarFallback>
             </Avatar>
             <div className="ml-3">

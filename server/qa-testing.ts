@@ -53,7 +53,7 @@ class QATestRunner {
       return {
         testName,
         status: 'FAIL',
-        message: `Test failed with error: ${error.message}`,
+        message: `Test failed with error: ${error instanceof Error ? error.message : String(error)}`,
         duration,
         timestamp: new Date().toISOString()
       };
@@ -401,7 +401,7 @@ export function setupQARoutes(app: Express) {
       console.error("Error running QA tests:", error);
       res.status(500).json({ 
         error: "Failed to run QA tests",
-        details: error.message
+        details: error instanceof Error ? error.message : String(error)
       });
     }
   });
@@ -431,7 +431,7 @@ export function setupQARoutes(app: Express) {
       console.error("Error generating QA report:", error);
       res.status(500).json({ 
         error: "Failed to generate QA report",
-        details: error.message
+        details: error instanceof Error ? error.message : String(error)
       });
     }
   });
@@ -480,7 +480,7 @@ export function setupQARoutes(app: Express) {
     } catch (error) {
       res.status(500).json({
         status: 'error',
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString()
       });
     }
@@ -533,7 +533,7 @@ export function setupQARoutes(app: Express) {
       console.error("Error in test data creation:", error);
       res.status(500).json({
         error: "Failed to create test data",
-        details: error.message
+        details: error instanceof Error ? error.message : String(error)
       });
     }
   });

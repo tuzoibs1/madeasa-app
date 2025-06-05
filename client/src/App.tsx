@@ -116,6 +116,13 @@ function Router() {
         allowedRoles={["director", "teacher"]} 
       />
       
+      {/* QA Testing Dashboard */}
+      <ProtectedRoute 
+        path="/qa" 
+        component={QADashboard} 
+        allowedRoles={["director"]} 
+      />
+      
       {/* Course pages */}
       <ProtectedRoute 
         path="/courses/:courseId" 
