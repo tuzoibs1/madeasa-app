@@ -33,6 +33,7 @@ import AboutPage from "@/pages/about";
 import CourseDetailsPage from "@/pages/courses/course-details";
 import SubmissionsPage from "@/pages/assignments/submissions";
 import AnalyticsDashboard from "@/pages/analytics/analytics-dashboard";
+import QADashboard from "@/pages/qa/qa-dashboard";
 
 function Router() {
   const isMobile = useIsMobile();
