@@ -185,7 +185,7 @@ export default function CompanyAdminDashboard() {
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{overview.data.stats.totalOrganizations}</div>
+                <div className="text-2xl font-bold">{overview?.data?.stats?.totalOrganizations || 0}</div>
                 <p className="text-xs text-muted-foreground">Across all subscription plans</p>
               </CardContent>
             </Card>
@@ -196,7 +196,7 @@ export default function CompanyAdminDashboard() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{overview.data.stats.totalUsers}</div>
+                <div className="text-2xl font-bold">{overview?.data?.stats?.totalUsers || 0}</div>
                 <p className="text-xs text-muted-foreground">All roles combined</p>
               </CardContent>
             </Card>
@@ -207,7 +207,7 @@ export default function CompanyAdminDashboard() {
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{overview.data.stats.activeFeedback}</div>
+                <div className="text-2xl font-bold">{overview?.data?.stats?.activeFeedback || 0}</div>
                 <p className="text-xs text-muted-foreground">Open support tickets</p>
               </CardContent>
             </Card>
@@ -410,11 +410,11 @@ export default function CompanyAdminDashboard() {
                       <tbody>
                         {allUsers?.data?.slice(0, 20).map((user: any) => (
                           <tr key={user.id} className="border-b">
-                            <td className="p-2 font-medium">{user.fullName}</td>
+                            <td className="p-2 font-medium">{user.fullName || 'N/A'}</td>
                             <td className="p-2">
-                              <Badge variant="outline">{user.role}</Badge>
+                              <Badge variant="outline">{user.role || 'Unknown'}</Badge>
                             </td>
-                            <td className="p-2 text-sm">{user.email}</td>
+                            <td className="p-2 text-sm">{user.email || 'N/A'}</td>
                             <td className="p-2 text-sm">
                               {user.organizationName ? (
                                 <div>
@@ -433,10 +433,16 @@ export default function CompanyAdminDashboard() {
                               <CheckCircle className="h-4 w-4 text-green-500" />
                             </td>
                             <td className="p-2 text-sm">
-                              {new Date(user.createdAt).toLocaleDateString()}
+                              {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                             </td>
                           </tr>
-                        ))}
+                        )) || (
+                          <tr>
+                            <td colSpan={6} className="text-center py-8 text-muted-foreground">
+                              No users found
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>

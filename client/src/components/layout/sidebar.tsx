@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   BarChart3,
-  TestTube
+  TestTube,
+  Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -75,6 +76,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </div>
 
           <nav className="space-y-1">
+            {user?.role === "company_admin" && (
+              <Link to="/company-admin">
+                <a
+                  className={cn(
+                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                    isActive("/company-admin") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                  )}
+                >
+                  <Building2 className="w-5 h-5 mr-2" />
+                  <span>Company Admin</span>
+                </a>
+              </Link>
+            )}
+
             {user?.role === "director" && (
               <Link to="/">
                 <a
@@ -189,21 +204,35 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     </a>
                   </Link>
                 )}
+              </>
+            )}
 
-                {user?.role === "director" && (
-                  <Link to="/qa">
-                    <a
-                      className={cn(
-                        "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                        isActive("/qa") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                      )}
-                    >
-                      <TestTube className="w-5 h-5 mr-2" />
-                      <span>QA Testing</span>
-                    </a>
-                  </Link>
-                )}
+            {/* Company Admin QA Access */}
+            {user?.role === "company_admin" && (
+              <>
+                <div className="pt-6 pb-2 px-4">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    ENTERPRISE TOOLS
+                  </p>
+                </div>
 
+                <Link to="/qa">
+                  <a
+                    className={cn(
+                      "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                      isActive("/qa") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                    )}
+                  >
+                    <TestTube className="w-5 h-5 mr-2" />
+                    <span>QA Testing</span>
+                  </a>
+                </Link>
+              </>
+            )}
+
+            {/* Analytics and Settings */}
+            {(user?.role === "director" || user?.role === "teacher") && (
+              <>
                 <Link to="/analytics">
                   <a
                     className={cn(
