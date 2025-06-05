@@ -8,7 +8,8 @@ import {
   HelpCircle, 
   UserPlus, 
   Settings,
-  LogOut
+  LogOut,
+  BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -187,6 +188,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     </a>
                   </Link>
                 )}
+
+                <Link to="/analytics">
+                  <a
+                    className={cn(
+                      "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                      isActive("/analytics") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                    )}
+                  >
+                    <BarChart3 className="w-5 h-5 mr-2" />
+                    <span>Analytics</span>
+                  </a>
+                </Link>
 
                 <Link to="/settings">
                   <a

@@ -77,7 +77,7 @@ export default function AnalyticsDashboard() {
   });
 
   // Fetch courses for filter
-  const { data: courses } = useQuery({
+  const { data: courses } = useQuery<any[]>({
     queryKey: ["/api/courses"],
     enabled: !!user
   });
@@ -131,7 +131,7 @@ export default function AnalyticsDashboard() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Courses</SelectItem>
-                {courses?.map((course: any) => (
+                {courses && courses.map((course: any) => (
                   <SelectItem key={course.id} value={course.id.toString()}>
                     {course.name}
                   </SelectItem>
