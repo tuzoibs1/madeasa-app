@@ -28,6 +28,37 @@ export async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+// API Key authentication middleware for external integrations
+export function apiKeyAuth(req: any, res: any, next: any) {
+  const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
+  
+  if (!apiKey) {
+    return next(); // Continue to session auth
+  }
+  
+  // Check if API key matches environment variable
+  if (apiKey === process.env.API_KEY) {
+    // For API key auth, we'll use a service account user
+    req.apiKeyAuth = true;
+    req.user = { id: 0, role: 'api', username: 'api-service' }; // Service account
+    return next();
+  }
+  
+  return res.status(401).json({ error: "Invalid API key" });
+}
+
+// Combined authentication check
+export function requireAuth(req: any, res: any, next: any) {
+  if (req.apiKeyAuth || req.isAuthenticated()) {
+    return next();
+  }
+  
+  return res.status(401).json({ 
+    error: "Authentication required", 
+    details: "Provide either valid session or API key" 
+  });
+}
+
 export function setupAuth(app: Express) {
   // Get the session secret from environment variables
   const sessionSecret = process.env.SESSION_SECRET || "islamic-studies-secret-key";
@@ -50,6 +81,9 @@ export function setupAuth(app: Express) {
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
+  
+  // Add API key authentication middleware
+  app.use('/api', apiKeyAuth);
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {
@@ -113,18 +147,23 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) {
-      console.log("Unauthorized access attempt to /api/user - user not authenticated");
-      return res.status(401).json({ error: "Authentication required", details: "You need to log in to access this resource" });
-    }
-    
+  app.get("/api/user", requireAuth, (req, res) => {
     if (!req.user) {
-      console.log("Authenticated but no user data found in session");
+      console.log("Authenticated but no user data found");
       return res.status(500).json({ error: "Session error", details: "User authenticated but no user data found" });
     }
     
     console.log(`User data retrieved for user ID: ${req.user.id}`);
     res.json(req.user);
+  });
+
+  // API endpoint specifically for external integrations like n8n
+  app.get("/api/system/status", requireAuth, (req, res) => {
+    res.json({
+      status: "active",
+      timestamp: new Date().toISOString(),
+      authenticated: true,
+      authMethod: req.apiKeyAuth ? 'api-key' : 'session'
+    });
   });
 }
