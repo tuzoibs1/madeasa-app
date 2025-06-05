@@ -34,6 +34,7 @@ import CourseDetailsPage from "@/pages/courses/course-details";
 import SubmissionsPage from "@/pages/assignments/submissions";
 import AnalyticsDashboard from "@/pages/analytics/analytics-dashboard";
 import QADashboard from "@/pages/qa/qa-dashboard";
+import CompanyAdminDashboard from "@/pages/company-admin/company-admin-dashboard";
 
 function Router() {
   const isMobile = useIsMobile();
@@ -116,11 +117,18 @@ function Router() {
         allowedRoles={["director", "teacher"]} 
       />
       
-      {/* QA Testing Dashboard */}
+      {/* Company Admin Dashboard */}
+      <ProtectedRoute 
+        path="/company-admin" 
+        component={CompanyAdminDashboard} 
+        allowedRoles={["company_admin"]} 
+      />
+      
+      {/* QA Testing Dashboard - Company Admin Only */}
       <ProtectedRoute 
         path="/qa" 
         component={QADashboard} 
-        allowedRoles={["director"]} 
+        allowedRoles={["company_admin"]} 
       />
       
       {/* Course pages */}

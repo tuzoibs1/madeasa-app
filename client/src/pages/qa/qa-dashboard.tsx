@@ -162,14 +162,14 @@ export default function QADashboard() {
     return <Badge variant={variant}>{status}</Badge>;
   };
 
-  if (!user || user.role !== 'director') {
+  if (!user || user.role !== 'company_admin') {
     return (
       <Layout title="QA Dashboard">
         <div className="text-center py-12">
           <AlertCircle className="h-16 w-16 text-slate-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
           <p className="text-slate-600">
-            QA Dashboard is only accessible to directors.
+            QA Dashboard is only accessible to company administrators.
           </p>
         </div>
       </Layout>
