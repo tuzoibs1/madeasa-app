@@ -3,10 +3,30 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
-export const userRoleEnum = pgEnum('user_role', ['director', 'teacher', 'student', 'parent']);
+export const userRoleEnum = pgEnum('user_role', ['company_admin', 'director', 'teacher', 'student', 'parent']);
 export const submissionStatusEnum = pgEnum('submission_status', ['submitted', 'graded', 'returned']);
+export const feedbackStatusEnum = pgEnum('feedback_status', ['open', 'in_progress', 'resolved', 'closed']);
+export const feedbackPriorityEnum = pgEnum('feedback_priority', ['low', 'medium', 'high', 'critical']);
+export const organizationStatusEnum = pgEnum('organization_status', ['active', 'suspended', 'trial', 'cancelled']);
 
 // Table definitions
+export const organizations = pgTable("organizations", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  website: text("website"),
+  contactEmail: text("contact_email"),
+  contactPhone: text("contact_phone"),
+  address: text("address"),
+  status: organizationStatusEnum("status").notNull().default('trial'),
+  subscriptionPlan: text("subscription_plan").default('basic'),
+  subscriptionExpiry: timestamp("subscription_expiry"),
+  maxUsers: integer("max_users").default(50),
+  currentUsers: integer("current_users").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -15,6 +35,7 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").notNull().default('student'),
   email: text("email"),
   profilePicture: text("profile_picture"),
+  organizationId: integer("organization_id").references(() => organizations.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -124,7 +145,48 @@ export const submissions = pgTable("submissions", {
   gradedBy: integer("graded_by").references(() => users.id),
 });
 
+export const userFeedback = pgTable("user_feedback", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  organizationId: integer("organization_id").references(() => organizations.id),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // 'bug', 'feature_request', 'support', 'complaint'
+  priority: feedbackPriorityEnum("priority").notNull().default('medium'),
+  status: feedbackStatusEnum("status").notNull().default('open'),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  resolution: text("resolution"),
+  userAgent: text("user_agent"),
+  ipAddress: text("ip_address"),
+  attachments: text("attachments").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+});
+
+export const feedbackComments = pgTable("feedback_comments", {
+  id: serial("id").primaryKey(),
+  feedbackId: integer("feedback_id").references(() => userFeedback.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  comment: text("comment").notNull(),
+  isInternal: boolean("is_internal").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const organizationLogs = pgTable("organization_logs", {
+  id: serial("id").primaryKey(),
+  organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  action: text("action").notNull(),
+  description: text("description").notNull(),
+  performedBy: integer("performed_by").references(() => users.id),
+  metadata: text("metadata"), // JSON string for additional data
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Zod schemas for validation and insertion
+export const insertOrganizationSchema = createInsertSchema(organizations).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true, createdAt: true });
 export const insertEnrollmentSchema = createInsertSchema(enrollments).omit({ id: true, enrollmentDate: true });
@@ -136,8 +198,12 @@ export const insertParentStudentRelationSchema = createInsertSchema(parentStuden
 export const insertMaterialSchema = createInsertSchema(materials).omit({ id: true, createdAt: true });
 export const insertAssignmentSchema = createInsertSchema(assignments).omit({ id: true, createdAt: true });
 export const insertSubmissionSchema = createInsertSchema(submissions).omit({ id: true, submittedAt: true, gradedAt: true });
+export const insertUserFeedbackSchema = createInsertSchema(userFeedback).omit({ id: true, createdAt: true, updatedAt: true, resolvedAt: true });
+export const insertFeedbackCommentSchema = createInsertSchema(feedbackComments).omit({ id: true, createdAt: true });
+export const insertOrganizationLogSchema = createInsertSchema(organizationLogs).omit({ id: true, createdAt: true });
 
 // Types for insertion
+export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type InsertEnrollment = z.infer<typeof insertEnrollmentSchema>;
@@ -149,8 +215,12 @@ export type InsertParentStudentRelation = z.infer<typeof insertParentStudentRela
 export type InsertMaterial = z.infer<typeof insertMaterialSchema>;
 export type InsertAssignment = z.infer<typeof insertAssignmentSchema>;
 export type InsertSubmission = z.infer<typeof insertSubmissionSchema>;
+export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
+export type InsertFeedbackComment = z.infer<typeof insertFeedbackCommentSchema>;
+export type InsertOrganizationLog = z.infer<typeof insertOrganizationLogSchema>;
 
 // Types for selection
+export type Organization = typeof organizations.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Course = typeof courses.$inferSelect;
 export type Enrollment = typeof enrollments.$inferSelect;
@@ -162,6 +232,9 @@ export type ParentStudentRelation = typeof parentStudentRelations.$inferSelect;
 export type Material = typeof materials.$inferSelect;
 export type Assignment = typeof assignments.$inferSelect;
 export type Submission = typeof submissions.$inferSelect;
+export type UserFeedback = typeof userFeedback.$inferSelect;
+export type FeedbackComment = typeof feedbackComments.$inferSelect;
+export type OrganizationLog = typeof organizationLogs.$inferSelect;
 
 // Extended schemas for login
 export const loginSchema = z.object({
