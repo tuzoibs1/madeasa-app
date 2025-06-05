@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import DirectorDashboard from "@/pages/dashboard/director-dashboard";
 import TeacherDashboard from "@/pages/dashboard/teacher-dashboard";
 import StudentDashboard from "@/pages/dashboard/student-dashboard";
+import ParentPortal from "@/pages/parent-portal";
 
 // Mobile Dashboards
 import TeacherMobileDashboard from "@/pages/mobile/teacher-mobile-dashboard";
@@ -60,6 +61,13 @@ function Router() {
         path="/student" 
         component={isMobile ? StudentMobileDashboard : StudentDashboard} 
         allowedRoles={["student"]} 
+      />
+      
+      {/* Parent portal */}
+      <ProtectedRoute 
+        path="/parent" 
+        component={ParentPortal} 
+        allowedRoles={["parent"]} 
       />
       
       {/* Mobile-specific routes */}
