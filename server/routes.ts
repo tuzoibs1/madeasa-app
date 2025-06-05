@@ -58,6 +58,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup n8n webhook functionality
   setupWebhookRoutes(app);
 
+  // Test endpoint to create sample parent accounts (development only)
+  if (process.env.NODE_ENV === 'development') {
+    app.post("/api/dev/create-test-parents", checkRole(['director']), async (req, res) => {
+      try {
+        const { createTestParentAccounts } = await import('./seed-parent-accounts');
+        const accounts = await createTestParentAccounts();
+        res.json({ 
+          success: true, 
+          message: "Test parent accounts created",
+          accounts: {
+            parent1: { username: "parent1", password: "password123" },
+            parent2: { username: "parent2", password: "password123" }
+          }
+        });
+      } catch (error) {
+        console.error("Error creating test parents:", error);
+        res.status(500).json({ error: "Failed to create test parent accounts" });
+      }
+    });
+  }
+
   // Define API routes
   
   // Courses

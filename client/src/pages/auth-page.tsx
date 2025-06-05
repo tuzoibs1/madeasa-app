@@ -57,6 +57,8 @@ export default function AuthPage() {
         navigate("/");
       } else if (user.role === "teacher") {
         navigate("/teacher");
+      } else if (user.role === "parent") {
+        navigate("/parent");
       } else {
         navigate("/student");
       }
