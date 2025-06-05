@@ -6,6 +6,7 @@ import { setupFileUploads } from "./uploads";
 import { setupNotificationRoutes, notifyParentsAboutStudentAbsence, notifyParentsAboutNewAssignment, notifyParentsAboutMemorizationProgress } from "./notifications";
 import { setupClassroomRoutes } from "./classroom";
 import { setupWebhookRoutes, webhookService } from "./webhook-service";
+import { setupAnalyticsRoutes } from "./analytics";
 import { z } from "zod";
 import {
   insertAttendanceSchema,
@@ -57,6 +58,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup n8n webhook functionality
   setupWebhookRoutes(app);
+  
+  // Setup analytics and reporting functionality
+  setupAnalyticsRoutes(app);
 
   // Test endpoint to create sample parent accounts (development only)
   if (process.env.NODE_ENV === 'development') {

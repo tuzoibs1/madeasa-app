@@ -32,6 +32,7 @@ import TeachersPage from "@/pages/teachers";
 import AboutPage from "@/pages/about";
 import CourseDetailsPage from "@/pages/courses/course-details";
 import SubmissionsPage from "@/pages/assignments/submissions";
+import AnalyticsDashboard from "@/pages/analytics/analytics-dashboard";
 
 function Router() {
   const isMobile = useIsMobile();
@@ -105,6 +106,13 @@ function Router() {
         path="/teachers" 
         component={TeachersPage} 
         allowedRoles={["director"]} 
+      />
+      
+      {/* Analytics Dashboard */}
+      <ProtectedRoute 
+        path="/analytics" 
+        component={AnalyticsDashboard} 
+        allowedRoles={["director", "teacher"]} 
       />
       
       {/* Course pages */}
