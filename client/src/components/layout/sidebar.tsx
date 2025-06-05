@@ -190,6 +190,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   </Link>
                 )}
 
+                {user?.role === "director" && (
+                  <Link to="/qa">
+                    <a
+                      className={cn(
+                        "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                        isActive("/qa") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                      )}
+                    >
+                      <TestTube className="w-5 h-5 mr-2" />
+                      <span>QA Testing</span>
+                    </a>
+                  </Link>
+                )}
+
                 <Link to="/analytics">
                   <a
                     className={cn(
