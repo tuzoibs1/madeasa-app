@@ -89,13 +89,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const course = await storage.createCourse(validData);
       
       // Get teacher details for webhook notification
-      const teacher = await storage.getUser(validData.teacherId);
-      if (teacher) {
-        await webhookService.notifyNewCourse(
-          course.name,
-          teacher.fullName,
-          course.startDate?.toISOString() || new Date().toISOString()
-        );
+      if (validData.teacherId) {
+        const teacher = await storage.getUser(validData.teacherId);
+        if (teacher) {
+          await webhookService.notifyNewCourse(
+            course.name,
+            teacher.fullName,
+            course.startDate?.toISOString() || new Date().toISOString()
+          );
+        }
       }
       
       res.status(201).json(course);
@@ -143,11 +145,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (student && course) {
         // Send n8n webhook notification
+        const dateString = validData.date 
+          ? (typeof validData.date === 'string' ? validData.date : validData.date.toISOString())
+          : new Date().toISOString();
+        
         await webhookService.notifyAttendance(
           student.fullName, 
-          course.title, 
+          course.name, 
           validData.status as 'present' | 'absent',
-          validData.date
+          dateString
         );
         
         // Send SMS notification to parents if student is absent
