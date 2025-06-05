@@ -5,6 +5,7 @@ import { setupAuth } from "./auth";
 import { setupFileUploads } from "./uploads";
 import { setupNotificationRoutes, notifyParentsAboutStudentAbsence, notifyParentsAboutNewAssignment, notifyParentsAboutMemorizationProgress } from "./notifications";
 import { setupClassroomRoutes } from "./classroom";
+import { setupWebhookRoutes, webhookService } from "./webhook-service";
 import { z } from "zod";
 import {
   insertAttendanceSchema,
@@ -53,6 +54,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup live classroom functionality
   setupClassroomRoutes(app);
+  
+  // Setup n8n webhook functionality
+  setupWebhookRoutes(app);
 
   // Define API routes
   
@@ -83,6 +87,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validData = insertCourseSchema.parse(req.body);
       const course = await storage.createCourse(validData);
+      
+      // Get teacher details for webhook notification
+      const teacher = await storage.getUser(validData.teacherId);
+      if (teacher) {
+        await webhookService.notifyNewCourse(
+          course.name,
+          teacher.fullName,
+          course.startDate?.toISOString() || new Date().toISOString()
+        );
+      }
+      
       res.status(201).json(course);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -122,10 +137,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validData = insertAttendanceSchema.parse(req.body);
       const attendance = await storage.createAttendance(validData);
       
-      // Send SMS notification to parents if student is absent
-      if (validData.status === 'absent') {
-        const currentDate = new Date().toLocaleDateString();
-        await notifyParentsAboutStudentAbsence(validData.studentId, currentDate);
+      // Get student and course details for notifications
+      const student = await storage.getUser(validData.studentId);
+      const course = await storage.getCourse(validData.courseId);
+      
+      if (student && course) {
+        // Send n8n webhook notification
+        await webhookService.notifyAttendance(
+          student.fullName, 
+          course.title, 
+          validData.status as 'present' | 'absent',
+          validData.date
+        );
+        
+        // Send SMS notification to parents if student is absent
+        if (validData.status === 'absent') {
+          const currentDate = new Date().toLocaleDateString();
+          await notifyParentsAboutStudentAbsence(validData.studentId, currentDate);
+        }
       }
       
       res.status(201).json(attendance);
