@@ -385,8 +385,8 @@ export function setupQARoutes(app: Express) {
   // Run comprehensive QA tests
   app.post("/api/qa/run-tests", async (req: Request, res: Response) => {
     try {
-      if (!req.isAuthenticated() || req.user?.role !== 'director') {
-        return res.status(403).json({ error: "Access denied. Director role required." });
+      if (!req.isAuthenticated() || req.user?.role !== 'company_admin') {
+        return res.status(403).json({ error: "Access denied. Company admin role required." });
       }
 
       console.log("Starting QA test execution...");
@@ -409,8 +409,8 @@ export function setupQARoutes(app: Express) {
   // Generate QA test report
   app.get("/api/qa/test-report", async (req: Request, res: Response) => {
     try {
-      if (!req.isAuthenticated() || req.user?.role !== 'director') {
-        return res.status(403).json({ error: "Access denied. Director role required." });
+      if (!req.isAuthenticated() || req.user?.role !== 'company_admin') {
+        return res.status(403).json({ error: "Access denied. Company admin role required." });
       }
 
       const results = await qaRunner.runComprehensiveQATests();
@@ -489,8 +489,8 @@ export function setupQARoutes(app: Express) {
   // Test data creation for QA
   app.post("/api/qa/create-test-data", async (req: Request, res: Response) => {
     try {
-      if (!req.isAuthenticated() || req.user?.role !== 'director') {
-        return res.status(403).json({ error: "Access denied. Director role required." });
+      if (!req.isAuthenticated() || req.user?.role !== 'company_admin') {
+        return res.status(403).json({ error: "Access denied. Company admin role required." });
       }
 
       const testData = {

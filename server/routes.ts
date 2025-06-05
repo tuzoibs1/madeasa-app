@@ -8,6 +8,7 @@ import { setupClassroomRoutes } from "./classroom";
 import { setupWebhookRoutes, webhookService } from "./webhook-service";
 import { setupAnalyticsRoutes } from "./analytics";
 import { setupQARoutes } from "./qa-testing";
+import { setupCompanyAdminRoutes } from "./company-admin";
 import { z } from "zod";
 import {
   insertAttendanceSchema,
@@ -65,6 +66,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup QA testing functionality
   setupQARoutes(app);
+  
+  // Setup Company Admin functionality
+  setupCompanyAdminRoutes(app);
 
   // Test endpoint to create sample parent accounts (development only)
   if (process.env.NODE_ENV === 'development') {
