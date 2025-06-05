@@ -9,7 +9,11 @@ import {
   parentStudentRelations, type ParentStudentRelation, type InsertParentStudentRelation,
   materials, type Material, type InsertMaterial,
   assignments, type Assignment, type InsertAssignment,
-  submissions, type Submission, type InsertSubmission
+  submissions, type Submission, type InsertSubmission,
+  organizations, type Organization, type InsertOrganization,
+  userFeedback, type UserFeedback, type InsertUserFeedback,
+  feedbackComments, type FeedbackComment, type InsertFeedbackComment,
+  organizationLogs, type OrganizationLog, type InsertOrganizationLog
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql, count } from "drizzle-orm";
@@ -79,6 +83,33 @@ export interface IStorage {
   getSubmissionsByAssignment(assignmentId: number): Promise<Submission[]>;
   getSubmissionsByStudent(studentId: number): Promise<Submission[]>;
   updateSubmissionGrade(id: number, grade: number, feedback: string, gradedBy: number): Promise<Submission>;
+  
+  // Company Admin - Organization Management
+  createOrganization(organization: InsertOrganization): Promise<Organization>;
+  getAllOrganizations(): Promise<Organization[]>;
+  getOrganization(id: number): Promise<Organization | undefined>;
+  updateOrganization(id: number, data: Partial<Organization>): Promise<Organization>;
+  getOrganizationUsers(organizationId: number): Promise<User[]>;
+  getOrganizationStats(organizationId: number): Promise<any>;
+  
+  // Company Admin - User Feedback Management
+  createUserFeedback(feedback: InsertUserFeedback): Promise<UserFeedback>;
+  getAllUserFeedback(filters?: any): Promise<UserFeedback[]>;
+  getUserFeedback(id: number): Promise<UserFeedback | undefined>;
+  updateUserFeedback(id: number, data: Partial<UserFeedback>): Promise<UserFeedback>;
+  getFeedbackByOrganization(organizationId: number): Promise<UserFeedback[]>;
+  
+  // Company Admin - Feedback Comments
+  createFeedbackComment(comment: InsertFeedbackComment): Promise<FeedbackComment>;
+  getFeedbackComments(feedbackId: number): Promise<FeedbackComment[]>;
+  
+  // Company Admin - Organization Logs
+  createOrganizationLog(log: InsertOrganizationLog): Promise<OrganizationLog>;
+  getOrganizationLogs(organizationId: number, limit?: number): Promise<OrganizationLog[]>;
+  
+  // Company Admin - System Overview
+  getCompanyOverviewStats(): Promise<any>;
+  getAllUsersWithOrganizations(): Promise<any[]>;
   
   // Session store
   sessionStore: any;
@@ -463,6 +494,206 @@ export class DatabaseStorage implements IStorage {
       .where(eq(submissions.id, id))
       .returning();
     return updatedSubmission;
+  }
+
+  // Company Admin - Organization Management
+  async createOrganization(insertOrganization: InsertOrganization): Promise<Organization> {
+    const [organization] = await db
+      .insert(organizations)
+      .values(insertOrganization)
+      .returning();
+    return organization;
+  }
+
+  async getAllOrganizations(): Promise<Organization[]> {
+    return await db
+      .select()
+      .from(organizations)
+      .orderBy(desc(organizations.createdAt));
+  }
+
+  async getOrganization(id: number): Promise<Organization | undefined> {
+    const [organization] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, id));
+    return organization;
+  }
+
+  async updateOrganization(id: number, data: Partial<Organization>): Promise<Organization> {
+    const [updatedOrganization] = await db
+      .update(organizations)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(organizations.id, id))
+      .returning();
+    return updatedOrganization;
+  }
+
+  async getOrganizationUsers(organizationId: number): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .where(eq(users.organizationId, organizationId))
+      .orderBy(desc(users.createdAt));
+  }
+
+  async getOrganizationStats(organizationId: number): Promise<any> {
+    const orgUsers = await this.getOrganizationUsers(organizationId);
+    const directors = orgUsers.filter(u => u.role === 'director').length;
+    const teachers = orgUsers.filter(u => u.role === 'teacher').length;
+    const students = orgUsers.filter(u => u.role === 'student').length;
+    const parents = orgUsers.filter(u => u.role === 'parent').length;
+
+    return {
+      totalUsers: orgUsers.length,
+      directors,
+      teachers,
+      students,
+      parents,
+      lastActivity: orgUsers[0]?.createdAt || null
+    };
+  }
+
+  // Company Admin - User Feedback Management
+  async createUserFeedback(insertUserFeedback: InsertUserFeedback): Promise<UserFeedback> {
+    const [feedback] = await db
+      .insert(userFeedback)
+      .values(insertUserFeedback)
+      .returning();
+    return feedback;
+  }
+
+  async getAllUserFeedback(filters?: any): Promise<UserFeedback[]> {
+    let query = db.select().from(userFeedback);
+    
+    if (filters?.status) {
+      query = query.where(eq(userFeedback.status, filters.status));
+    }
+    if (filters?.priority) {
+      query = query.where(eq(userFeedback.priority, filters.priority));
+    }
+    if (filters?.category) {
+      query = query.where(eq(userFeedback.category, filters.category));
+    }
+    
+    return await query.orderBy(desc(userFeedback.createdAt));
+  }
+
+  async getUserFeedback(id: number): Promise<UserFeedback | undefined> {
+    const [feedback] = await db
+      .select()
+      .from(userFeedback)
+      .where(eq(userFeedback.id, id));
+    return feedback;
+  }
+
+  async updateUserFeedback(id: number, data: Partial<UserFeedback>): Promise<UserFeedback> {
+    const updateData: any = { ...data, updatedAt: new Date() };
+    if (data.status === 'resolved' && !data.resolvedAt) {
+      updateData.resolvedAt = new Date();
+    }
+    
+    const [updatedFeedback] = await db
+      .update(userFeedback)
+      .set(updateData)
+      .where(eq(userFeedback.id, id))
+      .returning();
+    return updatedFeedback;
+  }
+
+  async getFeedbackByOrganization(organizationId: number): Promise<UserFeedback[]> {
+    return await db
+      .select()
+      .from(userFeedback)
+      .where(eq(userFeedback.organizationId, organizationId))
+      .orderBy(desc(userFeedback.createdAt));
+  }
+
+  // Company Admin - Feedback Comments
+  async createFeedbackComment(insertFeedbackComment: InsertFeedbackComment): Promise<FeedbackComment> {
+    const [comment] = await db
+      .insert(feedbackComments)
+      .values(insertFeedbackComment)
+      .returning();
+    return comment;
+  }
+
+  async getFeedbackComments(feedbackId: number): Promise<FeedbackComment[]> {
+    return await db
+      .select()
+      .from(feedbackComments)
+      .where(eq(feedbackComments.feedbackId, feedbackId))
+      .orderBy(feedbackComments.createdAt);
+  }
+
+  // Company Admin - Organization Logs
+  async createOrganizationLog(insertOrganizationLog: InsertOrganizationLog): Promise<OrganizationLog> {
+    const [log] = await db
+      .insert(organizationLogs)
+      .values(insertOrganizationLog)
+      .returning();
+    return log;
+  }
+
+  async getOrganizationLogs(organizationId: number, limit: number = 50): Promise<OrganizationLog[]> {
+    return await db
+      .select()
+      .from(organizationLogs)
+      .where(eq(organizationLogs.organizationId, organizationId))
+      .orderBy(desc(organizationLogs.createdAt))
+      .limit(limit);
+  }
+
+  // Company Admin - System Overview
+  async getCompanyOverviewStats(): Promise<any> {
+    const totalOrganizations = await db.select({ count: count() }).from(organizations);
+    const totalUsers = await db.select({ count: count() }).from(users);
+    const activeFeedback = await db
+      .select({ count: count() })
+      .from(userFeedback)
+      .where(eq(userFeedback.status, 'open'));
+    
+    const organizationsByStatus = await db
+      .select({
+        status: organizations.status,
+        count: count()
+      })
+      .from(organizations)
+      .groupBy(organizations.status);
+
+    const usersByRole = await db
+      .select({
+        role: users.role,
+        count: count()
+      })
+      .from(users)
+      .groupBy(users.role);
+
+    return {
+      totalOrganizations: totalOrganizations[0].count,
+      totalUsers: totalUsers[0].count,
+      activeFeedback: activeFeedback[0].count,
+      organizationsByStatus,
+      usersByRole
+    };
+  }
+
+  async getAllUsersWithOrganizations(): Promise<any[]> {
+    return await db
+      .select({
+        id: users.id,
+        username: users.username,
+        fullName: users.fullName,
+        role: users.role,
+        email: users.email,
+        createdAt: users.createdAt,
+        organizationId: users.organizationId,
+        organizationName: organizations.name,
+        organizationStatus: organizations.status
+      })
+      .from(users)
+      .leftJoin(organizations, eq(users.organizationId, organizations.id))
+      .orderBy(desc(users.createdAt));
   }
 }
 
