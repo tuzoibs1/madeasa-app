@@ -64,16 +64,19 @@ export default function CompanyAdminDashboard() {
   });
 
   // Organizations data
-  const { data: organizations, isLoading: orgsLoading } = useQuery<Organization[]>({
+  const { data: organizationsResponse, isLoading: orgsLoading } = useQuery({
     queryKey: ["/api/company-admin/organizations"],
     enabled: !!user && user.role === 'company_admin'
   });
 
   // User feedback data
-  const { data: feedback, isLoading: feedbackLoading } = useQuery<UserFeedback[]>({
+  const { data: feedbackResponse, isLoading: feedbackLoading } = useQuery({
     queryKey: ["/api/company-admin/feedback"],
     enabled: !!user && user.role === 'company_admin'
   });
+
+  const organizations = (organizationsResponse as any)?.data || [];
+  const feedback = (feedbackResponse as any)?.data || [];
 
   // All users data
   const { data: allUsers, isLoading: usersLoading } = useQuery({
@@ -105,7 +108,7 @@ export default function CompanyAdminDashboard() {
     return <Badge variant={variants[priority] || "outline"}>{priority}</Badge>;
   };
 
-  const filteredFeedback = feedback?.filter(item => {
+  const filteredFeedback = feedback.filter((item: any) => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.user?.fullName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || item.status === statusFilter;
@@ -158,7 +161,7 @@ export default function CompanyAdminDashboard() {
               <Building2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overview?.data?.stats?.totalOrganizations || 0}</div>
+              <div className="text-2xl font-bold">{(overview as any)?.data?.stats?.totalOrganizations || 0}</div>
               <p className="text-xs text-muted-foreground">Across all subscription plans</p>
             </CardContent>
           </Card>
@@ -169,7 +172,7 @@ export default function CompanyAdminDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overview?.data?.stats?.totalUsers || 0}</div>
+              <div className="text-2xl font-bold">{(overview as any)?.data?.stats?.totalUsers || 0}</div>
               <p className="text-xs text-muted-foreground">All roles combined</p>
             </CardContent>
           </Card>
@@ -180,7 +183,7 @@ export default function CompanyAdminDashboard() {
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{overview?.data?.stats?.activeFeedback || 0}</div>
+              <div className="text-2xl font-bold">{(overview as any)?.data?.stats?.activeFeedback || 0}</div>
               <p className="text-xs text-muted-foreground">Open support tickets</p>
             </CardContent>
           </Card>
@@ -220,7 +223,7 @@ export default function CompanyAdminDashboard() {
                 ) : (
                   <div className="space-y-4">
                     {organizations && organizations.length > 0 ? (
-                      organizations.map((org) => (
+                      organizations.map((org: any) => (
                         <div key={org.id} className="border rounded-lg p-4">
                           <div className="flex justify-between items-start mb-3">
                             <div>
@@ -327,7 +330,7 @@ export default function CompanyAdminDashboard() {
                 ) : (
                   <div className="space-y-4">
                     {filteredFeedback && filteredFeedback.length > 0 ? (
-                      filteredFeedback.map((item) => (
+                      filteredFeedback.map((item: any) => (
                         <div key={item.id} className="border rounded-lg p-4">
                           <div className="flex justify-between items-start mb-3">
                             <div>
@@ -392,7 +395,7 @@ export default function CompanyAdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {allUsers?.data?.slice(0, 20)?.map((user: any) => (
+                        {(allUsers as any)?.data?.slice(0, 20)?.map((user: any) => (
                           <tr key={user.id} className="border-b">
                             <td className="p-2 font-medium">{user.fullName || 'N/A'}</td>
                             <td className="p-2">
