@@ -35,6 +35,7 @@ import SubmissionsPage from "@/pages/assignments/submissions";
 import AnalyticsDashboard from "@/pages/analytics/analytics-dashboard";
 import QADashboard from "@/pages/qa/qa-dashboard";
 import CompanyAdminDashboard from "@/pages/company-admin/company-admin-dashboard";
+import { RoleRedirect } from "@/components/role-redirect";
 
 function Router() {
   const isMobile = useIsMobile();
@@ -45,9 +46,12 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/about" component={AboutPage} />
       
-      {/* Role-specific dashboards */}
+      {/* Root route - redirects based on user role */}
+      <Route path="/" component={RoleRedirect} />
+      
+      {/* Role-specific dashboard routes */}
       <ProtectedRoute 
-        path="/" 
+        path="/dashboard/director" 
         component={DirectorDashboard} 
         allowedRoles={["director"]} 
       />
