@@ -81,32 +81,6 @@ export default function CompanyAdminDashboard() {
     enabled: !!user && user.role === 'company_admin'
   });
 
-  const updateOrganizationMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await apiRequest("PUT", `/api/company-admin/organizations/${id}`, data);
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Organization Updated",
-        description: "Organization settings have been updated successfully"
-      });
-    }
-  });
-
-  const updateFeedbackMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await apiRequest("PUT", `/api/company-admin/feedback/${id}`, data);
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Feedback Updated",
-        description: "Feedback status has been updated successfully"
-      });
-    }
-  });
-
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
       active: "default",
@@ -177,53 +151,51 @@ export default function CompanyAdminDashboard() {
         </div>
 
         {/* Overview Stats */}
-        {overview && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Organizations</CardTitle>
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{overview?.data?.stats?.totalOrganizations || 0}</div>
-                <p className="text-xs text-muted-foreground">Across all subscription plans</p>
-              </CardContent>
-            </Card>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Organizations</CardTitle>
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.data?.stats?.totalOrganizations || 0}</div>
+              <p className="text-xs text-muted-foreground">Across all subscription plans</p>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{overview?.data?.stats?.totalUsers || 0}</div>
-                <p className="text-xs text-muted-foreground">All roles combined</p>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.data?.stats?.totalUsers || 0}</div>
+              <p className="text-xs text-muted-foreground">All roles combined</p>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Feedback</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{overview?.data?.stats?.activeFeedback || 0}</div>
-                <p className="text-xs text-muted-foreground">Open support tickets</p>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Feedback</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{overview?.data?.stats?.activeFeedback || 0}</div>
+              <p className="text-xs text-muted-foreground">Open support tickets</p>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">QA Testing</CardTitle>
-                <TestTube className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">Available</div>
-                <p className="text-xs text-muted-foreground">Company admin exclusive</p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">QA Testing</CardTitle>
+              <TestTube className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">Available</div>
+              <p className="text-xs text-muted-foreground">Company admin exclusive</p>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="organizations" className="space-y-4">
@@ -247,52 +219,58 @@ export default function CompanyAdminDashboard() {
                   <div className="text-center py-8">Loading organizations...</div>
                 ) : (
                   <div className="space-y-4">
-                    {organizations?.map((org) => (
-                      <div key={org.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h3 className="font-semibold text-lg">{org.name}</h3>
-                            <div className="flex gap-2 mt-2">
-                              {getStatusBadge(org.status)}
-                              <Badge variant="outline">{org.subscriptionPlan}</Badge>
+                    {organizations && organizations.length > 0 ? (
+                      organizations.map((org) => (
+                        <div key={org.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="font-semibold text-lg">{org.name}</h3>
+                              <div className="flex gap-2 mt-2">
+                                {getStatusBadge(org.status)}
+                                <Badge variant="outline">{org.subscriptionPlan}</Badge>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Details
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </Button>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Total Users:</span>
+                              <div className="font-medium">{org.stats.totalUsers}/{org.maxUsers}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Directors:</span>
+                              <div className="font-medium">{org.stats.directors}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Teachers:</span>
+                              <div className="font-medium">{org.stats.teachers}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Students:</span>
+                              <div className="font-medium">{org.stats.students}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Parents:</span>
+                              <div className="font-medium">{org.stats.parents}</div>
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Total Users:</span>
-                            <div className="font-medium">{org.stats.totalUsers}/{org.maxUsers}</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Directors:</span>
-                            <div className="font-medium">{org.stats.directors}</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Teachers:</span>
-                            <div className="font-medium">{org.stats.teachers}</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Students:</span>
-                            <div className="font-medium">{org.stats.students}</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Parents:</span>
-                            <div className="font-medium">{org.stats.parents}</div>
-                          </div>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No organizations found
                       </div>
-                    ))}
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -348,35 +326,41 @@ export default function CompanyAdminDashboard() {
                   <div className="text-center py-8">Loading feedback...</div>
                 ) : (
                   <div className="space-y-4">
-                    {filteredFeedback?.map((item) => (
-                      <div key={item.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h3 className="font-semibold">{item.title}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              By {item.user?.fullName} ({item.user?.role})
-                              {item.organization && ` from ${item.organization.name}`}
-                            </p>
+                    {filteredFeedback && filteredFeedback.length > 0 ? (
+                      filteredFeedback.map((item) => (
+                        <div key={item.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="font-semibold">{item.title}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                By {item.user?.fullName} ({item.user?.role})
+                                {item.organization && ` from ${item.organization.name}`}
+                              </p>
+                            </div>
+                            <div className="flex gap-2">
+                              {getStatusBadge(item.status)}
+                              {getPriorityBadge(item.priority)}
+                            </div>
                           </div>
-                          <div className="flex gap-2">
-                            {getStatusBadge(item.status)}
-                            {getPriorityBadge(item.priority)}
+                          
+                          <div className="flex justify-between items-center text-sm">
+                            <div className="flex gap-4">
+                              <span>Category: {item.category}</span>
+                              <span>Comments: {item.commentsCount}</span>
+                              <span>Created: {new Date(item.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <Button variant="outline" size="sm">
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Details
+                            </Button>
                           </div>
                         </div>
-                        
-                        <div className="flex justify-between items-center text-sm">
-                          <div className="flex gap-4">
-                            <span>Category: {item.category}</span>
-                            <span>Comments: {item.commentsCount}</span>
-                            <span>Created: {new Date(item.createdAt).toLocaleDateString()}</span>
-                          </div>
-                          <Button variant="outline" size="sm">
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Details
-                          </Button>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No feedback found
                       </div>
-                    ))}
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -408,7 +392,7 @@ export default function CompanyAdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {allUsers?.data?.slice(0, 20).map((user: any) => (
+                        {allUsers?.data?.slice(0, 20)?.map((user: any) => (
                           <tr key={user.id} className="border-b">
                             <td className="p-2 font-medium">{user.fullName || 'N/A'}</td>
                             <td className="p-2">
