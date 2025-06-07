@@ -11,11 +11,6 @@ export default function LessonsMobile() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   
-  // Redirect to desktop view if not on mobile
-  if (!isMobile) {
-    return <Redirect to="/lessons" />;
-  }
-  
   // Define lesson type
   interface Lesson {
     id: number;
@@ -25,11 +20,16 @@ export default function LessonsMobile() {
     duration: number;
   }
   
-  // Fetch lessons data
+  // Fetch lessons data - always call hooks before any conditional returns
   const { data: lessons, isLoading, error } = useQuery<Lesson[]>({
     queryKey: ['/api/lessons'],
     retry: false,
   });
+  
+  // Redirect to desktop view if not on mobile (after all hooks)
+  if (!isMobile) {
+    return <Redirect to="/lessons" />;
+  }
   
   if (isLoading) {
     return (

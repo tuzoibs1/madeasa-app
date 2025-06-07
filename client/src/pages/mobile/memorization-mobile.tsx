@@ -21,16 +21,16 @@ export default function MemorizationMobile() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   
-  // Redirect to desktop view if not on mobile
-  if (!isMobile) {
-    return <Redirect to="/memorization" />;
-  }
-  
-  // Fetch memorization data
+  // Fetch memorization data - always call hooks before any conditional returns
   const { data: memorizations, isLoading } = useQuery<Memorization[]>({
     queryKey: ['/api/memorization'],
     retry: false,
   });
+  
+  // Redirect to desktop view if not on mobile (after all hooks)
+  if (!isMobile) {
+    return <Redirect to="/memorization" />;
+  }
   
   if (isLoading) {
     return (
