@@ -63,6 +63,7 @@ import {
   XCircle,
   User,
   Pencil,
+  AlertTriangle,
 } from "lucide-react";
 import { Course, User as UserType, insertUserSchema } from "@shared/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
