@@ -77,6 +77,21 @@ class SMSNotificationService {
     const message = `MadrasaApp: New lesson "${lessonTitle}" has been posted for ${studentName}'s class. Check the app for materials and details.`;
     return this.sendSMS(parentPhone, message);
   }
+
+  async notifyParentAboutNewAssignment(parentPhone: string, studentName: string, assignmentTitle: string, dueDate: string) {
+    const message = `📝 New assignment for ${studentName}: "${assignmentTitle}". Due: ${dueDate}. Check the app for details.`;
+    return this.sendSMS(parentPhone, message);
+  }
+
+  async notifyParentAboutUpcomingClass(parentPhone: string, studentName: string, className: string, startTime: string) {
+    const message = `🕐 Reminder: ${studentName} has ${className} starting at ${startTime}. Don't forget!`;
+    return this.sendSMS(parentPhone, message);
+  }
+
+  async notifyParentAboutHomeworkDue(parentPhone: string, studentName: string, homeworkTitle: string, dueTime: string) {
+    const message = `⏰ Homework reminder: "${homeworkTitle}" for ${studentName} is due ${dueTime}. Please ensure completion.`;
+    return this.sendSMS(parentPhone, message);
+  }
 }
 
 // Create singleton instance
@@ -111,7 +126,7 @@ export async function notifyParentsAboutStudentAbsence(studentId: number, date: 
   }
 }
 
-export async function notifyParentsAboutNewAssignment(courseId: number, assignmentTitle: string) {
+export async function notifyParentsAboutNewAssignment(courseId: number, assignmentTitle: string, dueDate: string) {
   try {
     const students = await storage.getStudentsByCourse(courseId);
     
@@ -120,12 +135,51 @@ export async function notifyParentsAboutNewAssignment(courseId: number, assignme
       
       for (const parent of parents) {
         if (parent.email && parent.email.includes('+')) {
-          await smsService.notifyParentAboutAssignment(parent.email, student.fullName, assignmentTitle);
+          await smsService.notifyParentAboutNewAssignment(parent.email, student.fullName, assignmentTitle, dueDate);
         }
       }
     }
   } catch (error) {
     console.error("Failed to notify parents about assignment:", error);
+  }
+}
+
+export async function notifyParentsAboutUpcomingClass(courseId: number, className: string, startTime: string) {
+  try {
+    const students = await storage.getStudentsByCourse(courseId);
+    
+    for (const student of students) {
+      const parents = await storage.getParentsByStudent(student.id);
+      
+      for (const parent of parents) {
+        if (parent.email && parent.email.includes('+')) {
+          await smsService.notifyParentAboutUpcomingClass(parent.email, student.fullName, className, startTime);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Failed to notify parents about upcoming class:", error);
+  }
+}
+
+export async function notifyParentsAboutHomeworkDue(assignmentId: number, homeworkTitle: string, dueTime: string) {
+  try {
+    const assignment = await storage.getAssignment(assignmentId);
+    if (!assignment) return;
+    
+    const students = await storage.getStudentsByCourse(assignment.courseId);
+    
+    for (const student of students) {
+      const parents = await storage.getParentsByStudent(student.id);
+      
+      for (const parent of parents) {
+        if (parent.email && parent.email.includes('+')) {
+          await smsService.notifyParentAboutHomeworkDue(parent.email, student.fullName, homeworkTitle, dueTime);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Failed to notify parents about homework due:", error);
   }
 }
 
@@ -174,6 +228,42 @@ export function setupNotificationRoutes(app: Express) {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: "Failed to send notifications" });
+    }
+  });
+
+  // Notify parents about new assignment
+  app.post("/api/notifications/assignment", async (req: Request, res: Response) => {
+    const { courseId, assignmentTitle, dueDate } = req.body;
+    
+    try {
+      await notifyParentsAboutNewAssignment(courseId, assignmentTitle, dueDate);
+      res.json({ success: true, message: "Assignment notifications sent" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send assignment notifications" });
+    }
+  });
+
+  // Notify parents about upcoming class
+  app.post("/api/notifications/class-reminder", async (req: Request, res: Response) => {
+    const { courseId, className, startTime } = req.body;
+    
+    try {
+      await notifyParentsAboutUpcomingClass(courseId, className, startTime);
+      res.json({ success: true, message: "Class reminder notifications sent" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send class reminders" });
+    }
+  });
+
+  // Notify parents about homework due
+  app.post("/api/notifications/homework-due", async (req: Request, res: Response) => {
+    const { assignmentId, homeworkTitle, dueTime } = req.body;
+    
+    try {
+      await notifyParentsAboutHomeworkDue(assignmentId, homeworkTitle, dueTime);
+      res.json({ success: true, message: "Homework due notifications sent" });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to send homework due notifications" });
     }
   });
 
