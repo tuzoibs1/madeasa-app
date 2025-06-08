@@ -77,96 +77,89 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
           <nav className="space-y-1">
             {user?.role === "company_admin" && (
-              <Link to="/company-admin">
-                <a
-                  className={cn(
-                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                    isActive("/company-admin") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                  )}
-                >
-                  <Building2 className="w-5 h-5 mr-2" />
-                  <span>Company Admin</span>
-                </a>
+              <Link 
+                to="/company-admin"
+                className={cn(
+                  "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                  isActive("/company-admin") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                )}
+              >
+                <Building2 className="w-5 h-5 mr-2" />
+                <span>Company Admin</span>
               </Link>
             )}
 
             {user?.role === "director" && (
-              <Link to="/">
-                <a
-                  className={cn(
-                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                    isActive("/") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                  )}
-                >
-                  <Home className="w-5 h-5 mr-2" />
-                  <span>Dashboard</span>
-                </a>
+              <Link 
+                to="/"
+                className={cn(
+                  "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                  isActive("/") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                )}
+              >
+                <Home className="w-5 h-5 mr-2" />
+                <span>Dashboard</span>
               </Link>
             )}
 
             {user?.role === "teacher" && (
-              <Link to="/teacher">
-                <a
-                  className={cn(
-                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                    isActive("/teacher") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                  )}
-                >
-                  <Home className="w-5 h-5 mr-2" />
-                  <span>Dashboard</span>
-                </a>
+              <Link 
+                to="/teacher"
+                className={cn(
+                  "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                  isActive("/teacher") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                )}
+              >
+                <Home className="w-5 h-5 mr-2" />
+                <span>Dashboard</span>
               </Link>
             )}
 
             {user?.role === "student" && (
-              <Link to="/student">
-                <a
-                  className={cn(
-                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                    isActive("/student") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                  )}
-                >
-                  <Home className="w-5 h-5 mr-2" />
-                  <span>Dashboard</span>
-                </a>
+              <Link 
+                to="/student"
+                className={cn(
+                  "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                  isActive("/student") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                )}
+              >
+                <Home className="w-5 h-5 mr-2" />
+                <span>Dashboard</span>
               </Link>
             )}
 
-            <Link to="/lessons">
-              <a
-                className={cn(
-                  "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                  isActive("/lessons") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                )}
-              >
-                <Book className="w-5 h-5 mr-2" />
-                <span>Lessons</span>
-              </a>
+            <Link 
+              to="/lessons"
+              className={cn(
+                "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                isActive("/lessons") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+              )}
+            >
+              <Book className="w-5 h-5 mr-2" />
+              <span>Lessons</span>
             </Link>
 
-            <Link to="/memorization">
-              <a
-                className={cn(
-                  "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                  isActive("/memorization") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                )}
-              >
-                <CheckSquare className="w-5 h-5 mr-2" />
-                <span>Memorization</span>
-              </a>
+            <Link 
+              to="/memorization"
+              className={cn(
+                "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                isActive("/memorization") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+              )}
+            >
+              <CheckSquare className="w-5 h-5 mr-2" />
+              <span>Memorization</span>
             </Link>
 
             {(user?.role === "director" || user?.role === "teacher") && (
-              <Link to="/attendance">
-                <a
-                  className={cn(
-                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                    isActive("/attendance") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                  )}
-                >
-                  <Calendar className="w-5 h-5 mr-2" />
-                  <span>Attendance</span>
-                </a>
+              <Link 
+                to="/attendance"
+                className={cn(
+                  "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                  isActive("/attendance") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                )}
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                <span>Attendance</span>
               </Link>
             )}
 
@@ -179,29 +172,27 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   </p>
                 </div>
 
-                <Link to="/students">
-                  <a
-                    className={cn(
-                      "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                      isActive("/students") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                    )}
-                  >
-                    <Users className="w-5 h-5 mr-2" />
-                    <span>Students</span>
-                  </a>
+                <Link 
+                  to="/students"
+                  className={cn(
+                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                    isActive("/students") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                  )}
+                >
+                  <Users className="w-5 h-5 mr-2" />
+                  <span>Students</span>
                 </Link>
 
                 {user?.role === "director" && (
-                  <Link to="/teachers">
-                    <a
-                      className={cn(
-                        "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                        isActive("/teachers") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                      )}
-                    >
-                      <UserPlus className="w-5 h-5 mr-2" />
-                      <span>Teachers</span>
-                    </a>
+                  <Link 
+                    to="/teachers"
+                    className={cn(
+                      "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                      isActive("/teachers") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                    )}
+                  >
+                    <UserPlus className="w-5 h-5 mr-2" />
+                    <span>Teachers</span>
                   </Link>
                 )}
               </>
@@ -216,16 +207,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                   </p>
                 </div>
 
-                <Link to="/qa">
-                  <a
-                    className={cn(
-                      "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                      isActive("/qa") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                    )}
-                  >
-                    <TestTube className="w-5 h-5 mr-2" />
-                    <span>QA Testing</span>
-                  </a>
+                <Link 
+                  to="/qa"
+                  className={cn(
+                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                    isActive("/qa") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                  )}
+                >
+                  <TestTube className="w-5 h-5 mr-2" />
+                  <span>QA Testing</span>
                 </Link>
               </>
             )}
@@ -233,28 +223,26 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             {/* Analytics and Settings */}
             {(user?.role === "director" || user?.role === "teacher") && (
               <>
-                <Link to="/analytics">
-                  <a
-                    className={cn(
-                      "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                      isActive("/analytics") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                    )}
-                  >
-                    <BarChart3 className="w-5 h-5 mr-2" />
-                    <span>Analytics</span>
-                  </a>
+                <Link 
+                  to="/analytics"
+                  className={cn(
+                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                    isActive("/analytics") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                  )}
+                >
+                  <BarChart3 className="w-5 h-5 mr-2" />
+                  <span>Analytics</span>
                 </Link>
 
-                <Link to="/settings">
-                  <a
-                    className={cn(
-                      "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
-                      isActive("/settings") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
-                    )}
-                  >
-                    <Settings className="w-5 h-5 mr-2" />
-                    <span>Settings</span>
-                  </a>
+                <Link 
+                  to="/settings"
+                  className={cn(
+                    "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                    isActive("/settings") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                  )}
+                >
+                  <Settings className="w-5 h-5 mr-2" />
+                  <span>Settings</span>
                 </Link>
               </>
             )}
