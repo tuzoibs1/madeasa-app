@@ -47,6 +47,9 @@ export default function ParentNotificationsPage() {
     queryKey: ["/api/notifications/status"],
   });
 
+  // Type the notification status
+  const status = notificationStatus as { smsEnabled?: boolean; twilioConfigured?: boolean } | undefined;
+
   // Test SMS mutation
   const testSMSMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; message: string }) => {
@@ -130,7 +133,7 @@ export default function ParentNotificationsPage() {
   };
 
   return (
-    <Layout>
+    <Layout title="Parent Notifications">
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center space-x-2">
           <Bell className="h-8 w-8 text-primary" />
@@ -155,14 +158,14 @@ export default function ParentNotificationsPage() {
               <div className="flex items-center space-x-2">
                 <div
                   className={`h-3 w-3 rounded-full ${
-                    notificationStatus?.smsEnabled ? "bg-green-500" : "bg-red-500"
+                    status?.smsEnabled ? "bg-green-500" : "bg-red-500"
                   }`}
                 />
                 <span>SMS Notifications</span>
                 <Badge
-                  variant={notificationStatus?.smsEnabled ? "default" : "destructive"}
+                  variant={status?.smsEnabled ? "default" : "destructive"}
                 >
-                  {notificationStatus?.smsEnabled ? "Enabled" : "Disabled"}
+                  {status?.smsEnabled ? "Enabled" : "Disabled"}
                 </Badge>
               </div>
               <div className="flex items-center space-x-2">
@@ -171,7 +174,7 @@ export default function ParentNotificationsPage() {
                 <Badge variant="default">Enabled</Badge>
               </div>
             </div>
-            {!notificationStatus?.smsEnabled && (
+            {!status?.smsEnabled && (
               <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <p className="text-sm text-yellow-800">
                   SMS notifications are disabled. Configure Twilio credentials to enable SMS alerts.

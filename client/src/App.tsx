@@ -35,6 +35,7 @@ import SubmissionsPage from "@/pages/assignments/submissions";
 import AnalyticsDashboard from "@/pages/analytics/analytics-dashboard";
 import QADashboard from "@/pages/qa/qa-dashboard";
 import CompanyAdminDashboard from "@/pages/company-admin/company-admin-dashboard";
+import ParentNotificationsPage from "@/pages/parent-notifications";
 import { RoleRedirect } from "@/components/role-redirect";
 
 function Router() {
@@ -75,6 +76,13 @@ function Router() {
         path="/parent" 
         component={ParentPortal} 
         allowedRoles={["parent"]} 
+      />
+      
+      {/* Parent notifications page */}
+      <ProtectedRoute 
+        path="/parent/notifications" 
+        component={ParentNotificationsPage} 
+        allowedRoles={["parent", "director", "company_admin"]} 
       />
       
       {/* Mobile-specific routes */}
