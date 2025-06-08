@@ -23,52 +23,48 @@ export default function MobileNav() {
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-10 bg-white shadow-[0_-1px_3px_rgba(0,0,0,0.1)]">
       <div className="flex justify-around items-center h-16 border-t border-slate-200">
-        <Link to={getBasePath()}>
-          <a
-            className={cn(
-              "flex flex-col items-center justify-center",
-              isActive(getBasePath()) ? "text-primary" : "text-slate-400"
-            )}
-          >
-            <Home className="text-xl mb-1" />
-            <span className="text-xs">Dashboard</span>
-          </a>
+        <Link 
+          to={getBasePath()}
+          className={cn(
+            "flex flex-col items-center justify-center",
+            isActive(getBasePath()) ? "text-primary" : "text-slate-400"
+          )}
+        >
+          <Home className="text-xl mb-1" />
+          <span className="text-xs">Dashboard</span>
         </Link>
 
-        <Link to="/lessons">
-          <a
-            className={cn(
-              "flex flex-col items-center justify-center",
-              isActive("/lessons") ? "text-primary" : "text-slate-400"
-            )}
-          >
-            <Book className="text-xl mb-1" />
-            <span className="text-xs">Lessons</span>
-          </a>
+        <Link 
+          to="/lessons"
+          className={cn(
+            "flex flex-col items-center justify-center",
+            isActive("/lessons") ? "text-primary" : "text-slate-400"
+          )}
+        >
+          <Book className="text-xl mb-1" />
+          <span className="text-xs">Lessons</span>
         </Link>
 
-        <Link to="/memorization">
-          <a
-            className={cn(
-              "flex flex-col items-center justify-center",
-              isActive("/memorization") ? "text-primary" : "text-slate-400"
-            )}
-          >
-            <CheckSquare className="text-xl mb-1" />
-            <span className="text-xs">Memorization</span>
-          </a>
+        <Link 
+          to="/memorization"
+          className={cn(
+            "flex flex-col items-center justify-center",
+            isActive("/memorization") ? "text-primary" : "text-slate-400"
+          )}
+        >
+          <CheckSquare className="text-xl mb-1" />
+          <span className="text-xs">Memorization</span>
         </Link>
 
-        <Link to="/profile">
-          <a
-            className={cn(
-              "flex flex-col items-center justify-center",
-              isActive("/profile") ? "text-primary" : "text-slate-400"
-            )}
-          >
-            <User className="text-xl mb-1" />
-            <span className="text-xs">Profile</span>
-          </a>
+        <Link 
+          to="/profile"
+          className={cn(
+            "flex flex-col items-center justify-center",
+            isActive("/profile") ? "text-primary" : "text-slate-400"
+          )}
+        >
+          <User className="text-xl mb-1" />
+          <span className="text-xs">Profile</span>
         </Link>
       </div>
     </div>
