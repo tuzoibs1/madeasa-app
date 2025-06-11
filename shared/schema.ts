@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, pgEnum, varchar, date, time } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -235,6 +235,195 @@ export type Submission = typeof submissions.$inferSelect;
 export type UserFeedback = typeof userFeedback.$inferSelect;
 export type FeedbackComment = typeof feedbackComments.$inferSelect;
 export type OrganizationLog = typeof organizationLogs.$inferSelect;
+
+// Study Groups Schema
+export const studyGroups = pgTable("study_groups", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  courseId: integer("course_id").references(() => courses.id),
+  teacherId: integer("teacher_id").references(() => users.id),
+  maxMembers: integer("max_members").default(10),
+  type: varchar("type", { length: 50 }).notNull(), // memorization, arabic, islamic_history, general
+  meetingSchedule: text("meeting_schedule"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const studyGroupMemberships = pgTable("study_group_memberships", {
+  id: serial("id").primaryKey(),
+  groupId: integer("group_id").references(() => studyGroups.id),
+  studentId: integer("student_id").references(() => users.id),
+  role: varchar("role", { length: 20 }).default("member"), // member, leader
+  joinedAt: timestamp("joined_at").defaultNow(),
+  contributions: integer("contributions").default(0),
+});
+
+// Video Conferences Schema
+export const conferences = pgTable("conferences", {
+  id: serial("id").primaryKey(),
+  parentId: integer("parent_id").references(() => users.id),
+  studentId: integer("student_id").references(() => users.id),
+  teacherId: integer("teacher_id").references(() => users.id),
+  scheduledTime: timestamp("scheduled_time").notNull(),
+  duration: integer("duration").default(30), // minutes
+  meetingLink: varchar("meeting_link", { length: 500 }),
+  topics: text("topics").array(),
+  status: varchar("status", { length: 20 }).default("scheduled"), // scheduled, completed, cancelled, rescheduled
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Islamic Calendar Events Schema
+export const islamicCalendarEvents = pgTable("islamic_calendar_events", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // religious, historical, educational
+  hijriDate: varchar("hijri_date", { length: 100 }),
+  gregorianDate: date("gregorian_date"),
+  description: text("description"),
+  significance: text("significance"),
+  educationalContent: text("educational_content").array(),
+  recommendedActivities: text("recommended_activities").array(),
+  isActive: boolean("is_active").default(true),
+});
+
+// Madrasa Network Schema
+export const madrasaNetwork = pgTable("madrasa_network", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  location: varchar("location", { length: 255 }),
+  contactEmail: varchar("contact_email", { length: 255 }),
+  establishedYear: integer("established_year"),
+  studentCount: integer("student_count"),
+  specializations: text("specializations").array(),
+  isPartner: boolean("is_partner").default(false),
+  connectionType: varchar("connection_type", { length: 50 }), // sister_school, exchange_program, resource_sharing
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+// Knowledge Sharing Schema
+export const knowledgeSharing = pgTable("knowledge_sharing", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  category: varchar("category", { length: 50 }).notNull(), // curriculum, teaching_methods, resources, events
+  authorId: integer("author_id").references(() => users.id),
+  madrasaId: integer("madrasa_id").references(() => madrasaNetwork.id),
+  tags: text("tags").array(),
+  likes: integer("likes").default(0),
+  comments: integer("comments").default(0),
+  isPublic: boolean("is_public").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Weekly Progress Reports Schema
+export const weeklyReports = pgTable("weekly_reports", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").references(() => users.id),
+  weekStart: date("week_start").notNull(),
+  weekEnd: date("week_end").notNull(),
+  attendanceRate: integer("attendance_rate"),
+  versesMemorized: integer("verses_memorized"),
+  assignmentsCompleted: integer("assignments_completed"),
+  averageGrade: integer("average_grade"),
+  teacherNotes: text("teacher_notes").array(),
+  recommendations: text("recommendations").array(),
+  sentToParent: boolean("sent_to_parent").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Certificates Schema
+export const certificates = pgTable("certificates", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").references(() => users.id),
+  courseId: integer("course_id").references(() => courses.id),
+  type: varchar("type", { length: 50 }).notNull(), // completion, memorization, excellence
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  issuedDate: date("issued_date").defaultNow(),
+  certificateUrl: varchar("certificate_url", { length: 500 }),
+  verificationCode: varchar("verification_code", { length: 100 }),
+  isActive: boolean("is_active").default(true),
+});
+
+// Voice Recordings Schema
+export const voiceRecordings = pgTable("voice_recordings", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id").references(() => users.id),
+  assignmentId: integer("assignment_id").references(() => assignments.id),
+  surah: varchar("surah", { length: 100 }),
+  verses: varchar("verses", { length: 100 }),
+  recordingUrl: varchar("recording_url", { length: 500 }),
+  duration: integer("duration"), // seconds
+  teacherFeedback: text("teacher_feedback"),
+  grade: integer("grade"),
+  isApproved: boolean("is_approved").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Prayer Times Schema
+export const prayerTimes = pgTable("prayer_times", {
+  id: serial("id").primaryKey(),
+  location: varchar("location", { length: 255 }).notNull(),
+  date: date("date").notNull(),
+  fajr: time("fajr"),
+  sunrise: time("sunrise"),
+  dhuhr: time("dhuhr"),
+  asr: time("asr"),
+  maghrib: time("maghrib"),
+  isha: time("isha"),
+});
+
+// Add versesMemorized to memorizations table
+export const memorizationsExtended = pgTable("memorizations", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => courses.id),
+  studentId: integer("student_id").references(() => users.id),
+  surah: varchar("surah", { length: 100 }).notNull(),
+  ayahStart: integer("ayah_start").notNull(),
+  ayahEnd: integer("ayah_end").notNull(),
+  versesMemorized: integer("verses_memorized").default(0),
+  completionDate: timestamp("completion_date"),
+  progress: integer("progress").default(0),
+  isCompleted: boolean("is_completed").default(false),
+});
+
+// Extended schemas for insertion
+export const insertStudyGroupSchema = createInsertSchema(studyGroups).omit({ id: true, createdAt: true });
+export const insertStudyGroupMembershipSchema = createInsertSchema(studyGroupMemberships).omit({ id: true, joinedAt: true });
+export const insertConferenceSchema = createInsertSchema(conferences).omit({ id: true, createdAt: true });
+export const insertIslamicEventSchema = createInsertSchema(islamicCalendarEvents).omit({ id: true });
+export const insertMadrasaNetworkSchema = createInsertSchema(madrasaNetwork).omit({ id: true, joinedAt: true });
+export const insertKnowledgeSharingSchema = createInsertSchema(knowledgeSharing).omit({ id: true, createdAt: true, likes: true, comments: true });
+export const insertWeeklyReportSchema = createInsertSchema(weeklyReports).omit({ id: true, createdAt: true });
+export const insertCertificateSchema = createInsertSchema(certificates).omit({ id: true });
+export const insertVoiceRecordingSchema = createInsertSchema(voiceRecordings).omit({ id: true, createdAt: true });
+export const insertPrayerTimesSchema = createInsertSchema(prayerTimes).omit({ id: true });
+
+// Extended types for insertion
+export type InsertStudyGroup = z.infer<typeof insertStudyGroupSchema>;
+export type InsertStudyGroupMembership = z.infer<typeof insertStudyGroupMembershipSchema>;
+export type InsertConference = z.infer<typeof insertConferenceSchema>;
+export type InsertIslamicEvent = z.infer<typeof insertIslamicEventSchema>;
+export type InsertMadrasaNetwork = z.infer<typeof insertMadrasaNetworkSchema>;
+export type InsertKnowledgeSharing = z.infer<typeof insertKnowledgeSharingSchema>;
+export type InsertWeeklyReport = z.infer<typeof insertWeeklyReportSchema>;
+export type InsertCertificate = z.infer<typeof insertCertificateSchema>;
+export type InsertVoiceRecording = z.infer<typeof insertVoiceRecordingSchema>;
+export type InsertPrayerTimes = z.infer<typeof insertPrayerTimesSchema>;
+
+// Extended types for selection
+export type StudyGroup = typeof studyGroups.$inferSelect;
+export type StudyGroupMembership = typeof studyGroupMemberships.$inferSelect;
+export type Conference = typeof conferences.$inferSelect;
+export type IslamicCalendarEvent = typeof islamicCalendarEvents.$inferSelect;
+export type MadrasaNetwork = typeof madrasaNetwork.$inferSelect;
+export type KnowledgeSharing = typeof knowledgeSharing.$inferSelect;
+export type WeeklyReport = typeof weeklyReports.$inferSelect;
+export type Certificate = typeof certificates.$inferSelect;
+export type VoiceRecording = typeof voiceRecordings.$inferSelect;
+export type PrayerTimes = typeof prayerTimes.$inferSelect;
 
 // Extended schemas for login
 export const loginSchema = z.object({
