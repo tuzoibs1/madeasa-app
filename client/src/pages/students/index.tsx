@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import Layout from "@/components/layout/layout";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -210,115 +211,10 @@ export default function StudentsPage() {
                     />
                   </div>
 
-                  <Dialog
-                    open={addStudentOpen}
-                    onOpenChange={setAddStudentOpen}
-                  >
-                    <DialogTrigger asChild>
-                      <Button>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Add Student
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add New Student</DialogTitle>
-                        <DialogDescription>
-                          Fill in the student details to create a new account.
-                        </DialogDescription>
-                      </DialogHeader>
-
-                      <Form {...addStudentForm}>
-                        <form
-                          onSubmit={addStudentForm.handleSubmit(
-                            onAddStudentSubmit
-                          )}
-                          className="space-y-4"
-                        >
-                          <FormField
-                            control={addStudentForm.control}
-                            name="fullName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Full Name</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="Enter student's full name"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={addStudentForm.control}
-                            name="username"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Username</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="Enter username"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={addStudentForm.control}
-                            name="password"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Password</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="password"
-                                    placeholder="Enter password"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={addStudentForm.control}
-                            name="email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Email (Optional)</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    type="email"
-                                    placeholder="Enter email address"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <DialogFooter>
-                            <Button
-                              type="submit"
-                              disabled={addStudentMutation.isPending}
-                            >
-                              {addStudentMutation.isPending
-                                ? "Adding..."
-                                : "Add Student"}
-                            </Button>
-                          </DialogFooter>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
+                  <Button onClick={() => setLocation("/students/new")}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Student
+                  </Button>
                 </div>
               </div>
             </CardHeader>

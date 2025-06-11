@@ -93,6 +93,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Define API routes
   
+  // User Management
+  app.get("/api/users", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const role = req.query.role as string;
+      let users;
+      if (role) {
+        users = await storage.getUsersByRole(role);
+      } else {
+        users = await storage.getUsersByRole('student'); // Default to students
+      }
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.post("/api/users", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const { hashPassword } = await import('./auth');
+      const userData = req.body;
+      
+      // Hash the password before storing
+      if (userData.password) {
+        userData.password = await hashPassword(userData.password);
+      }
+      
+      const newUser = await storage.createUser(userData);
+      
+      // Remove password from response
+      const { password, ...userResponse } = newUser;
+      
+      res.status(201).json(userResponse);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+  
   // Courses
   app.get("/api/courses", isAuthenticated, async (req, res) => {
     try {
