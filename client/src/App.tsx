@@ -37,6 +37,8 @@ import AnalyticsDashboard from "@/pages/analytics/analytics-dashboard";
 import QADashboard from "@/pages/qa/qa-dashboard";
 import CompanyAdminDashboard from "@/pages/company-admin/company-admin-dashboard";
 import ParentNotificationsPage from "@/pages/parent-notifications";
+import ParentDashboard from "@/pages/parent-dashboard";
+import CommunityPage from "@/pages/community";
 import { RoleRedirect } from "@/components/role-redirect";
 
 function Router() {
@@ -84,6 +86,13 @@ function Router() {
         path="/parent/notifications" 
         component={ParentNotificationsPage} 
         allowedRoles={["parent", "director", "company_admin"]} 
+      />
+      
+      {/* Enhanced parent dashboard */}
+      <ProtectedRoute 
+        path="/parent/dashboard" 
+        component={ParentDashboard} 
+        allowedRoles={["parent"]} 
       />
       
       {/* Mobile-specific routes */}
@@ -147,6 +156,12 @@ function Router() {
         path="/qa" 
         component={QADashboard} 
         allowedRoles={["company_admin"]} 
+      />
+      
+      {/* Community Features */}
+      <ProtectedRoute 
+        path="/community" 
+        component={CommunityPage} 
       />
       
       {/* Course pages */}

@@ -220,6 +220,32 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               </>
             )}
 
+            {/* Community Features */}
+            <Link 
+              to="/community"
+              className={cn(
+                "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                isActive("/community") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+              )}
+            >
+              <Users className="w-5 h-5 mr-2" />
+              <span>Community</span>
+            </Link>
+
+            {/* Enhanced Parent Features */}
+            {user?.role === "parent" && (
+              <Link 
+                to="/parent/dashboard"
+                className={cn(
+                  "flex items-center px-4 py-3 text-slate-600 hover:bg-slate-50",
+                  isActive("/parent/dashboard") && "bg-primary bg-opacity-10 border-l-3 border-primary text-primary"
+                )}
+              >
+                <TrendingUp className="w-5 h-5 mr-2" />
+                <span>Enhanced Dashboard</span>
+              </Link>
+            )}
+
             {/* Analytics and Settings */}
             {(user?.role === "director" || user?.role === "teacher") && (
               <>
