@@ -9,6 +9,8 @@ import { setupWebhookRoutes, webhookService } from "./webhook-service";
 import { setupAnalyticsRoutes } from "./analytics";
 import { setupQARoutes } from "./qa-testing";
 import { setupCompanyAdminRoutes } from "./company-admin";
+import { setupParentEngagementRoutes } from "./parent-engagement";
+import { setupCommunityRoutes } from "./community-features";
 import { z } from "zod";
 import {
   insertAttendanceSchema,
@@ -69,6 +71,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup Company Admin functionality
   setupCompanyAdminRoutes(app);
+  
+  // Setup Parent Engagement functionality
+  setupParentEngagementRoutes(app);
+  
+  // Setup Community features
+  setupCommunityRoutes(app);
 
   // Test endpoint to create sample parent accounts (development only)
   if (process.env.NODE_ENV === 'development') {

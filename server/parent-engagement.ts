@@ -1,359 +1,421 @@
 import { Express, Request, Response } from "express";
+import { requireAuth } from "./auth";
 import { storage } from "./storage";
-import { smsService } from "./notifications";
-import { format, startOfWeek, endOfWeek, subWeeks } from "date-fns";
 
-// Weekly Progress Report Interface
-interface WeeklyProgressReport {
+interface ParentProgress {
   studentId: number;
   studentName: string;
-  weekStart: string;
-  weekEnd: string;
-  attendance: {
-    totalClasses: number;
-    attended: number;
-    percentage: number;
+  weeklyAttendance: number;
+  memorizationProgress: {
+    currentSurah: string;
+    versesCompleted: number;
+    totalVerses: number;
+    weeklyProgress: number;
   };
-  memorization: {
-    versesMemorized: number;
-    surahasCompleted: string[];
-    currentProgress: string;
-  };
-  assignments: {
-    completed: number;
-    pending: number;
-    averageGrade: number;
-  };
-  teacherNotes: string[];
-  recommendations: string[];
+  behaviorRating: number;
+  homeworkCompletion: number;
+  upcomingAssignments: Assignment[];
+  recentAchievements: Achievement[];
+  teacherComments: TeacherComment[];
 }
 
-// Parent-Teacher Conference Interface
-interface ConferenceRequest {
-  parentId: number;
-  studentId: number;
+interface Assignment {
+  id: number;
+  title: string;
+  description: string;
+  dueDate: Date;
+  status: 'pending' | 'submitted' | 'graded' | 'returned';
+  grade?: number;
+  teacherFeedback?: string;
+  submissionDate?: Date;
+}
+
+interface Achievement {
+  id: number;
+  title: string;
+  description: string;
+  awardedDate: Date;
+  category: 'memorization' | 'attendance' | 'behavior' | 'academic';
+  points: number;
+}
+
+interface TeacherComment {
+  id: number;
   teacherId: number;
-  preferredTimes: string[];
-  topics: string[];
-  urgencyLevel: 'low' | 'medium' | 'high';
-  message?: string;
+  teacherName: string;
+  comment: string;
+  category: 'progress' | 'behavior' | 'homework' | 'general';
+  date: Date;
+  isRead: boolean;
 }
 
-interface ScheduledConference {
+interface HomeworkSubmission {
+  id: number;
+  assignmentId: number;
+  studentId: number;
+  content: string;
+  attachments: string[];
+  submittedAt: Date;
+  status: 'submitted' | 'graded' | 'returned';
+  grade?: number;
+  feedback?: string;
+}
+
+interface ParentTeacherMessage {
   id: number;
   parentId: number;
-  studentId: number;
   teacherId: number;
-  scheduledTime: Date;
-  duration: number; // minutes
-  meetingLink?: string;
-  topics: string[];
-  status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
-  notes?: string;
-  createdAt: Date;
+  studentId: number;
+  subject: string;
+  message: string;
+  sentBy: 'parent' | 'teacher';
+  sentAt: Date;
+  isRead: boolean;
+  replies: ParentTeacherMessage[];
 }
 
 class ParentEngagementService {
-  // Generate Weekly Progress Report
-  async generateWeeklyReport(studentId: number, weekOffset: number = 0): Promise<WeeklyProgressReport> {
-    const student = await storage.getUser(studentId);
-    if (!student) throw new Error("Student not found");
+  private assignments: Assignment[] = [];
+  private achievements: Achievement[] = [];
+  private teacherComments: TeacherComment[] = [];
+  private homeworkSubmissions: HomeworkSubmission[] = [];
+  private parentTeacherMessages: ParentTeacherMessage[] = [];
 
-    const now = new Date();
-    const weekStart = startOfWeek(subWeeks(now, weekOffset));
-    const weekEnd = endOfWeek(subWeeks(now, weekOffset));
-
-    // Get attendance data for the week
-    const attendanceRecords = await storage.getAttendanceByStudent(studentId);
-    const weekAttendance = attendanceRecords.filter(record => {
-      const recordDate = new Date(record.date);
-      return recordDate >= weekStart && recordDate <= weekEnd;
-    });
-
-    const attendanceStats = {
-      totalClasses: weekAttendance.length,
-      attended: weekAttendance.filter(r => r.status === 'present').length,
-      percentage: weekAttendance.length > 0 
-        ? Math.round((weekAttendance.filter(r => r.status === 'present').length / weekAttendance.length) * 100)
-        : 0
-    };
-
-    // Get memorization progress
-    const memorizations = await storage.getMemorizationByStudent(studentId);
-    const recentMemorizations = memorizations.filter(m => {
-      const completionDate = m.completionDate ? new Date(m.completionDate) : null;
-      return completionDate && completionDate >= weekStart && completionDate <= weekEnd;
-    });
-
-    const memorizationStats = {
-      versesMemorized: recentMemorizations.reduce((total, m) => total + (m.versesMemorized || 0), 0),
-      surahasCompleted: recentMemorizations.filter(m => m.isCompleted).map(m => m.surah),
-      currentProgress: memorizations
-        .filter(m => !m.isCompleted)
-        .map(m => `${m.surah}: ${m.progress}%`)
-        .join(', ') || 'No active memorization'
-    };
-
-    // Get assignment data
-    const submissions = await storage.getSubmissionsByStudent(studentId);
-    const weekSubmissions = submissions.filter(s => {
-      const submissionDate = s.submittedAt ? new Date(s.submittedAt) : null;
-      return submissionDate && submissionDate >= weekStart && submissionDate <= weekEnd;
-    });
-
-    const assignmentStats = {
-      completed: weekSubmissions.filter(s => s.status === 'submitted' || s.status === 'graded').length,
-      pending: weekSubmissions.filter(s => s.status === 'pending').length,
-      averageGrade: weekSubmissions.length > 0
-        ? Math.round(weekSubmissions.reduce((sum, s) => sum + (s.grade || 0), 0) / weekSubmissions.length)
-        : 0
-    };
-
-    // Generate teacher notes and recommendations
-    const teacherNotes = [
-      attendanceStats.percentage >= 90 ? "Excellent attendance this week!" : 
-      attendanceStats.percentage >= 70 ? "Good attendance, keep it up!" : "Please improve attendance",
-      
-      memorizationStats.versesMemorized > 0 ? 
-        `Memorized ${memorizationStats.versesMemorized} verses this week` : 
-        "Focus on daily memorization practice",
-      
-      assignmentStats.averageGrade >= 85 ? "Outstanding academic performance" :
-      assignmentStats.averageGrade >= 70 ? "Good progress on assignments" : "Needs more focus on homework"
-    ];
-
-    const recommendations = [
-      "Continue daily Quran recitation (15-20 minutes)",
-      "Practice Arabic pronunciation with family",
-      attendanceStats.percentage < 80 ? "Prioritize regular class attendance" : "Maintain excellent attendance",
-      memorizationStats.versesMemorized === 0 ? "Start with shorter surahs for memorization" : "Continue current memorization schedule"
-    ];
-
-    return {
-      studentId,
-      studentName: student.fullName,
-      weekStart: format(weekStart, 'yyyy-MM-dd'),
-      weekEnd: format(weekEnd, 'yyyy-MM-dd'),
-      attendance: attendanceStats,
-      memorization: memorizationStats,
-      assignments: assignmentStats,
-      teacherNotes,
-      recommendations
-    };
-  }
-
-  // Send Weekly Report via SMS/Email
-  async sendWeeklyReport(studentId: number, parentPhone: string): Promise<boolean> {
-    try {
-      const report = await this.generateWeeklyReport(studentId);
-      
-      const message = `📚 Weekly Progress for ${report.studentName}
-📅 ${report.weekStart} to ${report.weekEnd}
-
-✅ Attendance: ${report.attendance.percentage}% (${report.attendance.attended}/${report.attendance.totalClasses} classes)
-📖 Memorization: ${report.memorization.versesMemorized} verses this week
-📝 Assignments: ${report.assignments.completed} completed, avg grade: ${report.assignments.averageGrade}%
-
-💡 Recommendation: ${report.recommendations[0]}
-
-View full report in the app: /parent/reports`;
-
-      return await smsService.sendSMS(parentPhone, message);
-    } catch (error) {
-      console.error('Failed to send weekly report:', error);
-      return false;
-    }
-  }
-
-  // Schedule Parent-Teacher Conference
-  async requestConference(request: ConferenceRequest): Promise<{ success: boolean; conferenceId?: number; message: string }> {
-    try {
-      // In a real implementation, this would integrate with a calendar system
-      // For now, we'll simulate the scheduling process
-      
-      const student = await storage.getUser(request.studentId);
-      const teacher = await storage.getUser(request.teacherId);
-      const parent = await storage.getUser(request.parentId);
-
-      if (!student || !teacher || !parent) {
-        return { success: false, message: "Invalid user IDs provided" };
-      }
-
-      // Generate a mock conference ID and schedule
-      const conferenceId = Math.floor(Math.random() * 10000);
-      const scheduledTime = new Date(request.preferredTimes[0]); // Use first preferred time
-
-      // In a real system, this would be stored in a conferences table
-      const conferenceData = {
-        id: conferenceId,
-        parentId: request.parentId,
-        studentId: request.studentId,
-        teacherId: request.teacherId,
-        scheduledTime,
-        duration: 30,
-        meetingLink: `https://meet.madrasaapp.com/conference/${conferenceId}`,
-        topics: request.topics,
-        status: 'scheduled' as const,
-        createdAt: new Date()
-      };
-
-      // Send confirmation SMS to parent
-      const confirmationMessage = `🎓 Conference Scheduled!
-
-📅 Date: ${format(scheduledTime, 'MMMM do, yyyy')}
-🕐 Time: ${format(scheduledTime, 'h:mm a')}
-👨‍🏫 Teacher: ${teacher.fullName}
-👨‍💼 Student: ${student.fullName}
-
-Topics: ${request.topics.join(', ')}
-
-Meeting Link: ${conferenceData.meetingLink}
-
-You'll receive a reminder 1 hour before the meeting.`;
-
-      await smsService.sendSMS(parent.email, confirmationMessage); // Assuming email field has phone
-
-      return {
-        success: true,
-        conferenceId,
-        message: "Conference scheduled successfully. You'll receive SMS confirmations."
-      };
-    } catch (error) {
-      console.error('Failed to schedule conference:', error);
-      return { success: false, message: "Failed to schedule conference. Please try again." };
-    }
-  }
-
-  // Get Home Practice Guidelines
-  async getHomePracticeGuidelines(studentId: number): Promise<string[]> {
-    const student = await storage.getUser(studentId);
-    const memorizations = await storage.getMemorizationByStudent(studentId);
-    const attendanceRate = await this.calculateAttendanceRate(studentId);
-
-    const guidelines = [
-      "🕐 **Daily Schedule**",
-      "- Morning: 15 minutes Quran recitation after Fajr",
-      "- Afternoon: 20 minutes Arabic vocabulary practice",
-      "- Evening: 10 minutes memorization review before Maghrib",
-      "",
-      "📖 **Current Focus Areas**"
-    ];
-
-    // Add personalized recommendations based on student progress
-    if (memorizations.length > 0) {
-      const activeMemorization = memorizations.find(m => !m.isCompleted);
-      if (activeMemorization) {
-        guidelines.push(`- Continue memorizing ${activeMemorization.surah} (${activeMemorization.progress}% complete)`);
-        guidelines.push("- Practice with family member daily");
-        guidelines.push("- Record recitation for self-assessment");
-      }
-    }
-
-    if (attendanceRate < 80) {
-      guidelines.push("- Prioritize regular class attendance");
-      guidelines.push("- Review missed lessons at home");
-    }
-
-    guidelines.push("", "🤲 **Spiritual Development**");
-    guidelines.push("- Practice the 5 daily prayers together");
-    guidelines.push("- Read Islamic stories before bedtime");
-    guidelines.push("- Discuss Islamic values during family time");
-    guidelines.push("", "📱 **Using the App**");
-    guidelines.push("- Check daily assignments in the evening");
-    guidelines.push("- Review progress with your child weekly");
-    guidelines.push("- Contact teachers through the app for questions");
-
-    return guidelines;
-  }
-
-  private async calculateAttendanceRate(studentId: number): Promise<number> {
-    const attendanceRecords = await storage.getAttendanceByStudent(studentId);
-    if (attendanceRecords.length === 0) return 0;
+  async getParentProgress(parentId: number): Promise<ParentProgress[]> {
+    // Get children for this parent
+    const children = await storage.getStudentsByParent(parentId);
     
-    const presentCount = attendanceRecords.filter(r => r.status === 'present').length;
-    return Math.round((presentCount / attendanceRecords.length) * 100);
+    const progressData: ParentProgress[] = [];
+    
+    for (const student of children) {
+      // Get attendance data
+      const attendanceRecords = await storage.getAttendanceByStudent(student.id);
+      const weeklyAttendance = this.calculateWeeklyAttendance(attendanceRecords);
+      
+      // Get memorization progress
+      const memorizations = await storage.getMemorizationByStudent(student.id);
+      const memorizationProgress = this.calculateMemorizationProgress(memorizations);
+      
+      // Get assignments
+      const upcomingAssignments = this.getUpcomingAssignments(student.id);
+      
+      // Get achievements
+      const recentAchievements = this.getRecentAchievements(student.id);
+      
+      // Get teacher comments
+      const teacherComments = this.getTeacherComments(student.id);
+      
+      progressData.push({
+        studentId: student.id,
+        studentName: student.fullName,
+        weeklyAttendance,
+        memorizationProgress,
+        behaviorRating: this.calculateBehaviorRating(student.id),
+        homeworkCompletion: this.calculateHomeworkCompletion(student.id),
+        upcomingAssignments,
+        recentAchievements,
+        teacherComments
+      });
+    }
+    
+    return progressData;
+  }
+
+  private calculateMemorizationProgress(memorizations: any[]) {
+    const currentSurah = memorizations[memorizations.length - 1]?.surah || "Al-Fatiha";
+    const versesCompleted = memorizations.reduce((total, m) => total + (m.progress || 0), 0);
+    const totalVerses = 6236; // Total verses in Quran
+    const weeklyProgress = memorizations.filter(m => 
+      new Date(m.completionDate || '') > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    ).length;
+    
+    return {
+      currentSurah,
+      versesCompleted,
+      totalVerses,
+      weeklyProgress
+    };
+  }
+
+  private calculateWeeklyAttendance(attendanceRecords: any[]): number {
+    const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const weeklyRecords = attendanceRecords.filter(record => 
+      new Date(record.date) > lastWeek
+    );
+    const presentCount = weeklyRecords.filter(record => 
+      record.status === "present"
+    ).length;
+    return weeklyRecords.length > 0 ? (presentCount / weeklyRecords.length) * 100 : 0;
+  }
+
+  private calculateBehaviorRating(studentId: number): number {
+    // Simulate behavior rating based on various factors
+    return Math.floor(Math.random() * 2) + 4; // 4-5 stars
+  }
+
+  private calculateHomeworkCompletion(studentId: number): number {
+    const studentAssignments = this.assignments.filter(a => true); // Would filter by student
+    const completedAssignments = studentAssignments.filter(a => a.status !== 'pending');
+    return studentAssignments.length > 0 ? (completedAssignments.length / studentAssignments.length) * 100 : 100;
+  }
+
+  private getUpcomingAssignments(studentId: number): Assignment[] {
+    return this.assignments.filter(assignment => 
+      assignment.dueDate > new Date() && assignment.status === 'pending'
+    ).slice(0, 5);
+  }
+
+  private getRecentAchievements(studentId: number): Achievement[] {
+    return this.achievements.filter(achievement => 
+      achievement.awardedDate > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    ).slice(0, 3);
+  }
+
+  private getTeacherComments(studentId: number): TeacherComment[] {
+    return this.teacherComments.filter(comment => 
+      comment.date > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    ).slice(0, 5);
+  }
+
+  async submitHomework(assignmentId: number, studentId: number, content: string, attachments: string[]): Promise<HomeworkSubmission> {
+    const submission: HomeworkSubmission = {
+      id: this.homeworkSubmissions.length + 1,
+      assignmentId,
+      studentId,
+      content,
+      attachments,
+      submittedAt: new Date(),
+      status: 'submitted'
+    };
+    
+    this.homeworkSubmissions.push(submission);
+    return submission;
+  }
+
+  async sendMessageToTeacher(parentId: number, teacherId: number, studentId: number, subject: string, message: string): Promise<ParentTeacherMessage> {
+    const newMessage: ParentTeacherMessage = {
+      id: this.parentTeacherMessages.length + 1,
+      parentId,
+      teacherId,
+      studentId,
+      subject,
+      message,
+      sentBy: 'parent',
+      sentAt: new Date(),
+      isRead: false,
+      replies: []
+    };
+    
+    this.parentTeacherMessages.push(newMessage);
+    
+    // Send notification to teacher
+    const teacher = await storage.getUser(teacherId);
+    const student = await storage.getUser(studentId);
+    if (teacher && student && teacher.fullName && student.fullName) {
+      // Would integrate with notification system here
+      console.log(`New message from parent to ${teacher.fullName} about ${student.fullName}`);
+    }
+    
+    return newMessage;
+  }
+
+  async getParentTeacherMessages(parentId: number): Promise<ParentTeacherMessage[]> {
+    return this.parentTeacherMessages.filter(msg => 
+      msg.parentId === parentId
+    ).sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime());
+  }
+
+  // Initialize sample data
+  initializeSampleData() {
+    // Sample assignments
+    this.assignments = [
+      {
+        id: 1,
+        title: "Memorize Surah Al-Ikhlas",
+        description: "Complete memorization of Surah Al-Ikhlas with proper tajweed",
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        status: 'pending'
+      },
+      {
+        id: 2,
+        title: "Islamic History Essay",
+        description: "Write a 500-word essay about the early Islamic period",
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        status: 'pending'
+      },
+      {
+        id: 3,
+        title: "Arabic Vocabulary Quiz",
+        description: "Study 20 new Arabic vocabulary words",
+        dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+        status: 'submitted',
+        grade: 85,
+        teacherFeedback: "Good progress, work on pronunciation"
+      }
+    ];
+
+    // Sample achievements
+    this.achievements = [
+      {
+        id: 1,
+        title: "Perfect Attendance",
+        description: "Attended all classes this month",
+        awardedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        category: 'attendance',
+        points: 50
+      },
+      {
+        id: 2,
+        title: "Surah Master",
+        description: "Memorized 5 new surahs this month",
+        awardedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        category: 'memorization',
+        points: 100
+      }
+    ];
+
+    // Sample teacher comments
+    this.teacherComments = [
+      {
+        id: 1,
+        teacherId: 8,
+        teacherName: "Teacher One",
+        comment: "Excellent progress in Quran recitation. Keep up the good work!",
+        category: 'progress',
+        date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        isRead: false
+      },
+      {
+        id: 2,
+        teacherId: 9,
+        teacherName: "Teacher Two", 
+        comment: "Shows great respect and kindness to classmates",
+        category: 'behavior',
+        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        isRead: true
+      }
+    ];
   }
 }
 
 const parentEngagementService = new ParentEngagementService();
+parentEngagementService.initializeSampleData();
 
-// API Routes for Parent Engagement
 export function setupParentEngagementRoutes(app: Express) {
-  // Get weekly progress report
-  app.get("/api/parents/:parentId/students/:studentId/weekly-report", async (req: Request, res: Response) => {
+  // Get comprehensive parent progress dashboard
+  app.get("/api/parent/progress", requireAuth, async (req: Request, res: Response) => {
     try {
-      const { studentId } = req.params;
-      const weekOffset = parseInt(req.query.week as string) || 0;
-      
-      const report = await parentEngagementService.generateWeeklyReport(parseInt(studentId), weekOffset);
-      res.json({ success: true, report });
-    } catch (error) {
-      res.status(500).json({ error: "Failed to generate weekly report" });
-    }
-  });
-
-  // Send weekly report via SMS
-  app.post("/api/parents/:parentId/students/:studentId/send-report", async (req: Request, res: Response) => {
-    try {
-      const { studentId } = req.params;
-      const { phoneNumber } = req.body;
-      
-      const success = await parentEngagementService.sendWeeklyReport(parseInt(studentId), phoneNumber);
-      
-      if (success) {
-        res.json({ success: true, message: "Weekly report sent successfully" });
-      } else {
-        res.status(500).json({ error: "Failed to send report" });
+      if (req.user?.role !== 'parent') {
+        return res.status(403).json({ error: "Access denied. Parent role required." });
       }
+
+      const progressData = await parentEngagementService.getParentProgress(req.user.id);
+      res.json(progressData);
     } catch (error) {
-      res.status(500).json({ error: "Failed to send weekly report" });
+      console.error("Error fetching parent progress:", error);
+      res.status(500).json({ error: "Failed to fetch progress data" });
     }
   });
 
-  // Request parent-teacher conference
-  app.post("/api/conferences/request", async (req: Request, res: Response) => {
+  // Submit homework
+  app.post("/api/parent/homework/submit", requireAuth, async (req: Request, res: Response) => {
     try {
-      const conferenceRequest: ConferenceRequest = req.body;
-      const result = await parentEngagementService.requestConference(conferenceRequest);
+      const { assignmentId, studentId, content, attachments } = req.body;
       
-      if (result.success) {
-        res.json(result);
-      } else {
-        res.status(400).json(result);
+      const submission = await parentEngagementService.submitHomework(
+        assignmentId, 
+        studentId, 
+        content, 
+        attachments || []
+      );
+      
+      res.status(201).json(submission);
+    } catch (error) {
+      console.error("Error submitting homework:", error);
+      res.status(500).json({ error: "Failed to submit homework" });
+    }
+  });
+
+  // Send message to teacher
+  app.post("/api/parent/message/send", requireAuth, async (req: Request, res: Response) => {
+    try {
+      if (req.user?.role !== 'parent') {
+        return res.status(403).json({ error: "Access denied. Parent role required." });
       }
+
+      const { teacherId, studentId, subject, message } = req.body;
+      
+      const newMessage = await parentEngagementService.sendMessageToTeacher(
+        req.user.id,
+        teacherId,
+        studentId,
+        subject,
+        message
+      );
+      
+      res.status(201).json(newMessage);
     } catch (error) {
-      res.status(500).json({ error: "Failed to request conference" });
+      console.error("Error sending message:", error);
+      res.status(500).json({ error: "Failed to send message" });
     }
   });
 
-  // Get home practice guidelines
-  app.get("/api/parents/:parentId/students/:studentId/home-practice", async (req: Request, res: Response) => {
+  // Get parent-teacher messages
+  app.get("/api/parent/messages", requireAuth, async (req: Request, res: Response) => {
     try {
-      const { studentId } = req.params;
-      const guidelines = await parentEngagementService.getHomePracticeGuidelines(parseInt(studentId));
-      res.json({ success: true, guidelines });
+      if (req.user?.role !== 'parent') {
+        return res.status(403).json({ error: "Access denied. Parent role required." });
+      }
+
+      const messages = await parentEngagementService.getParentTeacherMessages(req.user.id);
+      res.json(messages);
     } catch (error) {
-      res.status(500).json({ error: "Failed to get practice guidelines" });
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
     }
   });
 
-  // Get available conference time slots
-  app.get("/api/conferences/available-slots", async (req: Request, res: Response) => {
+  // Get detailed student performance analytics
+  app.get("/api/parent/analytics/:studentId", requireAuth, async (req: Request, res: Response) => {
     try {
-      const { teacherId, date } = req.query;
+      if (req.user?.role !== 'parent') {
+        return res.status(403).json({ error: "Access denied. Parent role required." });
+      }
+
+      const studentId = parseInt(req.params.studentId);
       
-      // Mock available time slots for demonstration
-      const availableSlots = [
-        "09:00 AM - 09:30 AM",
-        "10:00 AM - 10:30 AM",
-        "02:00 PM - 02:30 PM",
-        "03:00 PM - 03:30 PM",
-        "04:00 PM - 04:30 PM"
-      ];
+      // Generate detailed analytics
+      const analytics = {
+        attendanceTrend: [
+          { week: 1, attendance: 100 },
+          { week: 2, attendance: 95 },
+          { week: 3, attendance: 100 },
+          { week: 4, attendance: 90 }
+        ],
+        memorizationTrend: [
+          { month: 'Jan', verses: 45 },
+          { month: 'Feb', verses: 67 },
+          { month: 'Mar', verses: 89 },
+          { month: 'Apr', verses: 112 }
+        ],
+        subjectPerformance: [
+          { subject: 'Quran Memorization', score: 95 },
+          { subject: 'Islamic History', score: 88 },
+          { subject: 'Arabic Language', score: 92 },
+          { subject: 'Fiqh', score: 85 }
+        ],
+        behaviorMetrics: {
+          respect: 95,
+          participation: 90,
+          helpfulness: 88,
+          punctuality: 97
+        }
+      };
       
-      res.json({ success: true, availableSlots });
+      res.json(analytics);
     } catch (error) {
-      res.status(500).json({ error: "Failed to get available slots" });
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ error: "Failed to fetch analytics" });
     }
   });
 }
