@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import Layout from "@/components/layout/layout";
 import { useAuth } from "@/hooks/use-auth";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -27,14 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,109 +32,36 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  UserPlus,
   Search,
-  Filter,
-  Download,
-  Pencil,
-  User,
+  UserPlus,
+  GraduationCap,
+  BookOpen,
+  Trophy,
+  Clock,
   Mail,
   UserCheck,
   AlertTriangle,
 } from "lucide-react";
-import { Course, User as UserType, userRoleEnum, insertUserSchema } from "@shared/schema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { hashPassword } from "../../utils/auth";
-
-// Schema for adding new student
-const newStudentSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters long"),
-  password: z.string().min(6, "Password must be at least 6 characters long"),
-  fullName: z.string().min(1, "Full name is required"),
-  email: z.string().email("Please enter a valid email").optional().or(z.literal("")),
-  role: z.literal("student"),
-});
-
-type NewStudentValues = z.infer<typeof newStudentSchema>;
+import { Course, User as UserType } from "@shared/schema";
 
 export default function StudentsPage() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<string>("");
-  const [addStudentOpen, setAddStudentOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all-students");
 
   const isDirector = user?.role === "director";
 
   // Fetch all students
   const { data: students, isLoading: studentsLoading } = useQuery<UserType[]>({
-    queryKey: ["/api/users/role/student"],
+    queryKey: ["/api/users?role=student"],
   });
 
   // Fetch courses
   const { data: courses, isLoading: coursesLoading } = useQuery<Course[]>({
     queryKey: ["/api/courses"],
   });
-
-  // Form for adding new student
-  const addStudentForm = useForm<NewStudentValues>({
-    resolver: zodResolver(newStudentSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-      fullName: "",
-      email: "",
-      role: "student",
-    },
-  });
-
-  // Mutation for adding new student
-  const addStudentMutation = useMutation({
-    mutationFn: async (data: NewStudentValues) => {
-      const validData = insertUserSchema.parse(data);
-      const res = await apiRequest("POST", "/api/register", validData);
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "New student added successfully",
-      });
-
-      // Close dialog and reset form
-      setAddStudentOpen(false);
-      addStudentForm.reset();
-
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({
-        queryKey: ["/api/users/role/student"],
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to add student: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Handle form submission for adding student
-  const onAddStudentSubmit = (values: NewStudentValues) => {
-    addStudentMutation.mutate(values);
-  };
 
   // Filter students based on search query and selected course
   const filteredStudents = students
@@ -251,40 +168,37 @@ export default function StudentsPage() {
                                   {getInitials(student.fullName)}
                                 </AvatarFallback>
                               </Avatar>
-                              <span>{student.fullName}</span>
+                              <div>
+                                <div className="font-medium">
+                                  {student.fullName}
+                                </div>
+                                <div className="text-sm text-slate-500">
+                                  Student ID: {student.id}
+                                </div>
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>{student.username}</TableCell>
                           <TableCell>
-                            {student.email || (
-                              <span className="text-slate-400">Not set</span>
+                            {student.email ? (
+                              <div className="flex items-center">
+                                <Mail className="h-4 w-4 mr-1 text-slate-400" />
+                                {student.email}
+                              </div>
+                            ) : (
+                              <span className="text-slate-400">Not provided</span>
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              <Badge variant="outline" className="text-xs">
-                                Beginner Quran
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                Islamic Studies
-                              </Badge>
-                            </div>
+                            <Badge variant="secondary">
+                              <BookOpen className="h-3 w-3 mr-1" />
+                              View Classes
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-2"
-                              >
-                                <Pencil className="h-3.5 w-3.5 mr-1" />
-                                Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-2"
-                              >
+                              <Button variant="outline" size="sm">
+                                <UserCheck className="h-4 w-4 mr-1" />
                                 View Profile
                               </Button>
                             </div>
@@ -295,16 +209,17 @@ export default function StudentsPage() {
                   </Table>
                 </div>
               ) : (
-                <div className="text-center py-12 border rounded-md bg-slate-50">
-                  <User className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-                  <p className="text-slate-500 mb-2">
+                <div className="text-center py-8">
+                  <AlertTriangle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No students found</h3>
+                  <p className="text-slate-500 mb-4">
                     {searchQuery
-                      ? "No students found with this search criteria"
-                      : "No students found"}
+                      ? `No students match "${searchQuery}"`
+                      : "No students have been added yet"}
                   </p>
-                  <Button onClick={() => setAddStudentOpen(true)}>
+                  <Button onClick={() => setLocation("/students/new")}>
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Add First Student
+                    Add Your First Student
                   </Button>
                 </div>
               )}
@@ -315,193 +230,50 @@ export default function StudentsPage() {
         {/* Classes Tab */}
         <TabsContent value="classes">
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <CardTitle className="text-lg">Class Enrollment</CardTitle>
-
-                <div className="flex flex-wrap gap-2">
-                  <Select
-                    value={selectedCourse}
-                    onValueChange={setSelectedCourse}
-                    disabled={coursesLoading}
-                  >
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Select Class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Classes</SelectItem>
-                      {courses?.map((course) => (
-                        <SelectItem
-                          key={course.id}
-                          value={course.id.toString()}
-                        >
-                          {course.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Button variant="outline">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export
-                  </Button>
-                </div>
-              </div>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <GraduationCap className="h-5 w-5 mr-2" />
+                Classes Overview
+              </CardTitle>
+              <CardDescription>
+                View students organized by their enrolled classes
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {selectedCourse ? (
-                coursesLoading ? (
-                  <div className="space-y-4">
-                    <Skeleton className="h-10 w-full" />
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Skeleton key={i} className="h-16 w-full" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <Card>
-                        <CardContent className="p-6">
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-primary">
-                              21
-                            </div>
-                            <p className="text-sm text-slate-500">
-                              Total Students
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardContent className="p-6">
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-success">
-                              92%
-                            </div>
-                            <p className="text-sm text-slate-500">
-                              Attendance Rate
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardContent className="p-6">
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-blue-500">
-                              18
-                            </div>
-                            <p className="text-sm text-slate-500">
-                              Active Students
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardContent className="p-6">
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-secondary">
-                              3
-                            </div>
-                            <p className="text-sm text-slate-500">
-                              Inactive Students
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base">
-                          Student Enrollment List
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Student</TableHead>
-                                <TableHead>Join Date</TableHead>
-                                <TableHead>Attendance</TableHead>
-                                <TableHead>Memorization</TableHead>
-                                <TableHead>Actions</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {!studentsLoading &&
-                                students &&
-                                students.slice(0, 5).map((student) => (
-                                  <TableRow key={student.id}>
-                                    <TableCell className="font-medium">
-                                      <div className="flex items-center">
-                                        <Avatar className="h-8 w-8 mr-2">
-                                          <AvatarImage
-                                            src={student.profilePicture || ""}
-                                          />
-                                          <AvatarFallback>
-                                            {getInitials(student.fullName)}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        <span>{student.fullName}</span>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>May 12, 2023</TableCell>
-                                    <TableCell>
-                                      <Badge className="bg-success hover:bg-success text-white">
-                                        92%
-                                      </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-24 bg-slate-100 rounded-full h-2">
-                                          <div
-                                            className="bg-primary h-2 rounded-full"
-                                            style={{
-                                              width: `${70}%`,
-                                            }}
-                                          ></div>
-                                        </div>
-                                        <span className="text-xs font-medium">
-                                          70%
-                                        </span>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="flex gap-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          className="h-8 px-2"
-                                        >
-                                          View Progress
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          className="h-8 px-2 text-destructive border-destructive"
-                                        >
-                                          Remove
-                                        </Button>
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </CardContent>
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-20 w-full" />
+                  ))}
+                </div>
+              ) : courses && courses.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {courses.map((course) => (
+                    <Card key={course.id} className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{course.name}</h4>
+                        <Badge variant="outline">
+                          {Math.floor(Math.random() * 20) + 5} students
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-slate-500 mb-3">
+                        {course.description}
+                      </p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          <BookOpen className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                      </div>
                     </Card>
-                  </div>
-                )
+                  ))}
+                </div>
               ) : (
-                <div className="text-center py-12 border rounded-md bg-slate-50">
-                  <Filter className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-                  <p className="text-slate-500 mb-2">
-                    Please select a class to view enrollment details
+                <div className="text-center py-8">
+                  <BookOpen className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No classes found</h3>
+                  <p className="text-slate-500">
+                    Create courses to organize students into classes
                   </p>
                 </div>
               )}
@@ -509,206 +281,94 @@ export default function StudentsPage() {
           </Card>
         </TabsContent>
 
-        {/* Performance Tab (Directors only) */}
+        {/* Performance Tab (Director only) */}
         {isDirector && (
           <TabsContent value="performance">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Student Performance Overview</CardTitle>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Total Students
+                  </CardTitle>
+                  <UserCheck className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {students?.length || 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    +2 from last month
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Active Enrollments
+                  </CardTitle>
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {(students?.length || 0) * 2}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    +12% from last month
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Average Performance
+                  </CardTitle>
+                  <Trophy className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">85%</div>
+                  <p className="text-xs text-muted-foreground">
+                    +5% from last month
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Recent Student Activity</CardTitle>
                 <CardDescription>
-                  Analyze student performance metrics across all classes
+                  Latest student interactions and achievements
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Top Students</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {!studentsLoading &&
-                            students &&
-                            students.slice(0, 3).map((student, index) => (
-                              <div
-                                key={student.id}
-                                className="flex items-center p-2 bg-slate-50 rounded"
-                              >
-                                <div
-                                  className={`${
-                                    index === 0
-                                      ? "bg-secondary"
-                                      : index === 1
-                                      ? "bg-accent"
-                                      : "bg-blue-500"
-                                  } text-white w-6 h-6 rounded-full flex items-center justify-center mr-3`}
-                                >
-                                  {index + 1}
-                                </div>
-                                <div className="flex items-center">
-                                  <Avatar className="h-8 w-8 mr-2">
-                                    <AvatarImage
-                                      src={student.profilePicture || ""}
-                                    />
-                                    <AvatarFallback>
-                                      {getInitials(student.fullName)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="font-medium text-sm">
-                                      {student.fullName}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                      Advanced Quran Class
-                                    </p>
-                                  </div>
-                                </div>
-                                <Badge
-                                  className="ml-auto bg-success hover:bg-success text-white"
-                                  variant="secondary"
-                                >
-                                  95%
-                                </Badge>
-                              </div>
-                            ))}
+                <div className="space-y-4">
+                  {students?.slice(0, 5).map((student) => (
+                    <div
+                      key={student.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
+                      <div className="flex items-center">
+                        <Avatar className="h-8 w-8 mr-3">
+                          <AvatarImage src={student.profilePicture || ""} />
+                          <AvatarFallback>
+                            {getInitials(student.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{student.fullName}</div>
+                          <div className="text-sm text-slate-500">
+                            Last active: 2 hours ago
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">
-                          Students Needing Attention
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {!studentsLoading &&
-                            students &&
-                            students.slice(3, 6).map((student) => (
-                              <div
-                                key={student.id}
-                                className="flex items-center p-2 bg-red-50 rounded"
-                              >
-                                <AlertTriangle className="text-destructive w-5 h-5 mr-3" />
-                                <div className="flex items-center">
-                                  <Avatar className="h-8 w-8 mr-2">
-                                    <AvatarImage
-                                      src={student.profilePicture || ""}
-                                    />
-                                    <AvatarFallback>
-                                      {getInitials(student.fullName)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="font-medium text-sm">
-                                      {student.fullName}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                      Beginner Quran Class
-                                    </p>
-                                  </div>
-                                </div>
-                                <Badge
-                                  className="ml-auto bg-destructive hover:bg-destructive text-white"
-                                  variant="secondary"
-                                >
-                                  65%
-                                </Badge>
-                              </div>
-                            ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">
-                          Recent Achievements
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {!studentsLoading &&
-                            students &&
-                            students.slice(6, 9).map((student) => (
-                              <div
-                                key={student.id}
-                                className="flex items-center p-2 bg-green-50 rounded"
-                              >
-                                <UserCheck className="text-success w-5 h-5 mr-3" />
-                                <div className="flex items-center">
-                                  <Avatar className="h-8 w-8 mr-2">
-                                    <AvatarImage
-                                      src={student.profilePicture || ""}
-                                    />
-                                    <AvatarFallback>
-                                      {getInitials(student.fullName)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="font-medium text-sm">
-                                      {student.fullName}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                      Completed Surah Al-Fatiha
-                                    </p>
-                                  </div>
-                                </div>
-                                <Badge
-                                  className="ml-auto bg-slate-200 text-slate-700"
-                                  variant="secondary"
-                                >
-                                  2d ago
-                                </Badge>
-                              </div>
-                            ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base">
-                        Class Performance Comparison
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {!coursesLoading &&
-                          courses &&
-                          courses.map((course) => (
-                            <div key={course.id} className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-sm font-medium">
-                                  {course.name}
-                                </span>
-                                <span className="text-sm font-medium text-primary">
-                                  {Math.floor(Math.random() * 15) + 80}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-slate-100 rounded-full h-2.5">
-                                <div
-                                  className="bg-primary h-2.5 rounded-full"
-                                  style={{
-                                    width: `${Math.floor(Math.random() * 15) + 80}%`,
-                                  }}
-                                ></div>
-                              </div>
-                              <div className="flex justify-between text-xs text-slate-500">
-                                <span>Average Attendance</span>
-                                <span>
-                                  {Math.floor(Math.random() * 5) + 15}/20 students
-                                  above 90%
-                                </span>
-                              </div>
-                            </div>
-                          ))}
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 mr-1 text-slate-400" />
+                        <Badge variant="secondary">Active</Badge>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
