@@ -38,6 +38,7 @@ import QADashboard from "@/pages/qa/qa-dashboard";
 import CompanyAdminDashboard from "@/pages/company-admin/company-admin-dashboard";
 import ParentNotificationsPage from "@/pages/parent-notifications";
 import NotificationsPage from "@/pages/notifications";
+import ProfilePage from "@/pages/profile";
 import ParentDashboard from "@/pages/parent-dashboard";
 import CommunityPage from "@/pages/community";
 import { RoleRedirect } from "@/components/role-redirect";
@@ -178,14 +179,7 @@ function Router() {
       {/* Profile page */}
       <ProtectedRoute 
         path="/profile" 
-        component={() => (
-          <div className="min-h-screen bg-background flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <h1 className="text-2xl font-bold">Profile Page</h1>
-              <p className="text-muted-foreground">User profile management coming soon</p>
-            </div>
-          </div>
-        )}
+        component={ProfilePage}
       />
       
       {/* Course pages */}
