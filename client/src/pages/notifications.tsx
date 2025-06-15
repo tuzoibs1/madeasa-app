@@ -32,7 +32,7 @@ interface Notification {
   priority: 'low' | 'medium' | 'high';
 }
 
-export default function NotificationsPage() {
+function NotificationsPage() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
 
