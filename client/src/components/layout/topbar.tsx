@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useLocation } from "wouter";
 
 interface TopBarProps {
   title: string;
@@ -14,6 +15,7 @@ interface TopBarProps {
 export default function TopBar({ title, onMenuClick }: TopBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
   const getInitials = (name: string) => {
     return name
@@ -22,6 +24,21 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
       .join("")
       .toUpperCase()
       .substring(0, 2);
+  };
+
+  const handleNotificationClick = () => {
+    // Navigate to appropriate notifications page based on user role
+    if (user?.role === 'parent') {
+      setLocation('/parent-notifications');
+    } else if (user?.role === 'teacher') {
+      setLocation('/notifications');
+    } else if (user?.role === 'director') {
+      setLocation('/notifications');
+    } else if (user?.role === 'student') {
+      setLocation('/notifications');
+    } else {
+      setLocation('/notifications');
+    }
   };
 
   return (
@@ -52,7 +69,12 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
           </div>
 
           <div className="relative mr-3">
-            <Button variant="ghost" size="icon" className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative"
+              onClick={handleNotificationClick}
+            >
               <Bell className="h-5 w-5 text-slate-400" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full"></span>
             </Button>
