@@ -29,13 +29,7 @@ export default function TopBar({ title, onMenuClick }: TopBarProps) {
   const handleNotificationClick = () => {
     // Navigate to appropriate notifications page based on user role
     if (user?.role === 'parent') {
-      setLocation('/parent-notifications');
-    } else if (user?.role === 'teacher') {
-      setLocation('/notifications');
-    } else if (user?.role === 'director') {
-      setLocation('/notifications');
-    } else if (user?.role === 'student') {
-      setLocation('/notifications');
+      setLocation('/parent/notifications');
     } else {
       setLocation('/notifications');
     }
