@@ -61,6 +61,8 @@ export default function CompanyAdminDashboard() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [isNewOrgDialogOpen, setIsNewOrgDialogOpen] = useState(false);
+  const [isEditOrgDialogOpen, setIsEditOrgDialogOpen] = useState(false);
+  const [editingOrg, setEditingOrg] = useState<any>(null);
   const [newOrgData, setNewOrgData] = useState({
     name: "",
     location: "",
@@ -68,6 +70,13 @@ export default function CompanyAdminDashboard() {
     adminFullName: "",
     adminUsername: "",
     subscriptionPlan: "trial"
+  });
+  const [editOrgData, setEditOrgData] = useState({
+    name: "",
+    location: "",
+    contactEmail: "",
+    subscriptionPlan: "",
+    status: ""
   });
 
   // Company overview data
@@ -129,6 +138,31 @@ export default function CompanyAdminDashboard() {
     },
   });
 
+  // Edit organization mutation
+  const editOrganizationMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await apiRequest("PUT", `/api/company-admin/organizations/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Organization Updated",
+        description: "Organization has been successfully updated.",
+      });
+      setIsEditOrgDialogOpen(false);
+      setEditingOrg(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/company-admin/organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/company-admin/overview"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error", 
+        description: error.message || "Failed to update organization.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Export report function
   const handleExportReport = () => {
     try {
@@ -178,6 +212,36 @@ export default function CompanyAdminDashboard() {
     }
 
     createOrganizationMutation.mutate(newOrgData);
+  };
+
+  // Handle edit organization
+  const handleEditOrganization = (org: any) => {
+    setEditingOrg(org);
+    setEditOrgData({
+      name: org.name,
+      location: org.location,
+      contactEmail: org.contactEmail,
+      subscriptionPlan: org.subscriptionPlan,
+      status: org.status
+    });
+    setIsEditOrgDialogOpen(true);
+  };
+
+  // Handle update organization
+  const handleUpdateOrganization = () => {
+    if (!editOrgData.name || !editOrgData.location || !editOrgData.contactEmail) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    editOrganizationMutation.mutate({
+      id: editingOrg.id,
+      data: editOrgData
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -348,6 +412,98 @@ export default function CompanyAdminDashboard() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+
+            {/* Edit Organization Dialog */}
+            <Dialog open={isEditOrgDialogOpen} onOpenChange={setIsEditOrgDialogOpen}>
+              <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Edit Organization</DialogTitle>
+                  <DialogDescription>
+                    Update organization details and settings.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-name">Organization Name *</Label>
+                    <Input
+                      id="edit-name"
+                      placeholder="Organization name"
+                      value={editOrgData.name}
+                      onChange={(e) => setEditOrgData({ ...editOrgData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-location">Location *</Label>
+                    <Input
+                      id="edit-location"
+                      placeholder="City, Country"
+                      value={editOrgData.location}
+                      onChange={(e) => setEditOrgData({ ...editOrgData, location: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-contactEmail">Contact Email *</Label>
+                    <Input
+                      id="edit-contactEmail"
+                      type="email"
+                      placeholder="contact@organization.com"
+                      value={editOrgData.contactEmail}
+                      onChange={(e) => setEditOrgData({ ...editOrgData, contactEmail: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-subscriptionPlan">Subscription Plan</Label>
+                    <Select 
+                      value={editOrgData.subscriptionPlan} 
+                      onValueChange={(value) => setEditOrgData({ ...editOrgData, subscriptionPlan: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select plan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="trial">Trial (30 days)</SelectItem>
+                        <SelectItem value="basic">Basic Plan</SelectItem>
+                        <SelectItem value="premium">Premium Plan</SelectItem>
+                        <SelectItem value="enterprise">Enterprise Plan</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-status">Status</Label>
+                    <Select 
+                      value={editOrgData.status} 
+                      onValueChange={(value) => setEditOrgData({ ...editOrgData, status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="trial">Trial</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsEditOrgDialogOpen(false)}
+                    className="w-full sm:w-auto"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleUpdateOrganization}
+                    disabled={editOrganizationMutation.isPending}
+                    className="w-full sm:w-auto"
+                  >
+                    {editOrganizationMutation.isPending ? "Updating..." : "Update Organization"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -436,7 +592,11 @@ export default function CompanyAdminDashboard() {
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
                               </Button>
-                              <Button variant="outline" size="sm">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditOrganization(org)}
+                              >
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </Button>
