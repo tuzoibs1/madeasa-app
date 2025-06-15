@@ -118,6 +118,10 @@ function Router() {
         component={isMobile ? MemorizationMobile : MemorizationPage} 
       />
       <ProtectedRoute 
+        path="/memorization/:id" 
+        component={isMobile ? MemorizationMobile : MemorizationPage} 
+      />
+      <ProtectedRoute 
         path="/lessons" 
         component={isMobile ? LessonsMobile : LessonsPage} 
       />
