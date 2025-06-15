@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Tabs,
@@ -108,6 +107,11 @@ export default function ProfilePage() {
     ).join(' ');
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Not specified';
+    return new Date(dateString).toLocaleDateString();
+  };
+
   return (
     <Layout title="Profile">
       <div className="container mx-auto p-6 space-y-6">
@@ -141,11 +145,16 @@ export default function ProfilePage() {
         </div>
 
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="preferences">Preferences</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 gap-2">
+            <TabsTrigger value="general" className="px-4 py-2">
+              General
+            </TabsTrigger>
+            <TabsTrigger value="security" className="px-4 py-2">
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="px-4 py-2">
+              Activity
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-6">
@@ -153,23 +162,12 @@ export default function ProfilePage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={user?.profilePicture || undefined} />
-                      <AvatarFallback className="text-xl">
-                        {user?.fullName ? getInitials(user.fullName) : "US"}
-                      </AvatarFallback>
-                    </Avatar>
-                    {isEditing && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
-                      >
-                        <Camera className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={user?.profilePicture || undefined} />
+                    <AvatarFallback className="text-xl">
+                      {user?.fullName ? getInitials(user.fullName) : "US"}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <h2 className="text-2xl font-semibold">
@@ -186,8 +184,8 @@ export default function ProfilePage() {
                         <span>{user?.email || "No email provided"}</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Phone className="h-4 w-4" />
-                        <span>{profileData.phone || "No phone number provided"}</span>
+                        <Calendar className="h-4 w-4" />
+                        <span>Joined {formatDate(user?.createdAt?.toString() || null)}</span>
                       </div>
                     </div>
                   </div>
@@ -222,45 +220,51 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="username">Username</Label>
                     <Input
-                      id="phone"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
-                      disabled={!isEditing}
+                      id="username"
+                      value={user?.username || ""}
+                      disabled={true}
+                      className="bg-muted"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                    <Label htmlFor="role">Role</Label>
                     <Input
-                      id="dateOfBirth"
-                      type="date"
-                      value={profileData.dateOfBirth}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-                      disabled={!isEditing}
+                      id="role"
+                      value={formatRole(user?.role || "")}
+                      disabled={true}
+                      className="bg-muted"
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    value={profileData.address}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, address: e.target.value }))}
-                    disabled={!isEditing}
-                    placeholder="Enter your full address"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={profileData.bio}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
-                    disabled={!isEditing}
-                    placeholder="Tell us about yourself..."
-                    rows={3}
-                  />
+              </CardContent>
+            </Card>
+
+            {/* Account Statistics */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Statistics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-primary">
+                      {user?.organizationId ? "1" : "0"}
+                    </div>
+                    <p className="text-sm text-muted-foreground">Organizations</p>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-primary">
+                      {formatDate(user?.createdAt?.toString() || null) !== 'Not specified' ? 
+                        Math.floor((new Date().getTime() - new Date(user?.createdAt || '').getTime()) / (1000 * 60 * 60 * 24)) : 0}
+                    </div>
+                    <p className="text-sm text-muted-foreground">Days Active</p>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-primary">1</div>
+                    <p className="text-sm text-muted-foreground">Profile Views</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -280,7 +284,7 @@ export default function ProfilePage() {
                     <div>
                       <h4 className="font-medium">Password</h4>
                       <p className="text-sm text-muted-foreground">
-                        Last changed 30 days ago
+                        Keep your account secure with a strong password
                       </p>
                     </div>
                     <Button variant="outline">Change Password</Button>
@@ -300,107 +304,10 @@ export default function ProfilePage() {
                     <div>
                       <h4 className="font-medium">Login Sessions</h4>
                       <p className="text-sm text-muted-foreground">
-                        Manage your active sessions
+                        Manage your active sessions across devices
                       </p>
                     </div>
                     <Button variant="outline">View Sessions</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="preferences" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="h-5 w-5" />
-                  <span>Preferences</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="language">Language</Label>
-                    <Select
-                      value={profileData.language}
-                      onValueChange={(value) => setProfileData(prev => ({ ...prev, language: value }))}
-                      disabled={!isEditing}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="ar">Arabic</SelectItem>
-                        <SelectItem value="ur">Urdu</SelectItem>
-                        <SelectItem value="fr">French</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Select
-                      value={profileData.timezone}
-                      onValueChange={(value) => setProfileData(prev => ({ ...prev, timezone: value }))}
-                      disabled={!isEditing}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="UTC">UTC</SelectItem>
-                        <SelectItem value="America/New_York">Eastern Time</SelectItem>
-                        <SelectItem value="America/Chicago">Central Time</SelectItem>
-                        <SelectItem value="America/Denver">Mountain Time</SelectItem>
-                        <SelectItem value="America/Los_Angeles">Pacific Time</SelectItem>
-                        <SelectItem value="Europe/London">London</SelectItem>
-                        <SelectItem value="Asia/Dubai">Dubai</SelectItem>
-                        <SelectItem value="Asia/Karachi">Karachi</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Bell className="h-5 w-5" />
-                  <span>Notification Preferences</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Email Notifications</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Receive notifications via email
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm">Configure</Button>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">SMS Notifications</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Receive notifications via SMS
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm">Configure</Button>
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium">Push Notifications</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Receive notifications in the app
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm">Configure</Button>
                   </div>
                 </div>
               </CardContent>
@@ -420,22 +327,24 @@ export default function ProfilePage() {
                   <div className="flex items-center space-x-3 p-3 border rounded-lg">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Profile updated</p>
-                      <p className="text-xs text-muted-foreground">2 hours ago</p>
+                      <p className="text-sm font-medium">Profile viewed</p>
+                      <p className="text-xs text-muted-foreground">Just now</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 border rounded-lg">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium">Password changed</p>
-                      <p className="text-xs text-muted-foreground">1 week ago</p>
+                      <p className="text-sm font-medium">Logged in</p>
+                      <p className="text-xs text-muted-foreground">Today</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3 p-3 border rounded-lg">
                     <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">Account created</p>
-                      <p className="text-xs text-muted-foreground">1 month ago</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(user?.createdAt?.toString() || null)}
+                      </p>
                     </div>
                   </div>
                 </div>
