@@ -111,8 +111,11 @@ Required environment variables:
 - `N8N_*`: Webhook integration settings (optional)
 - `API_KEY`: External API authentication
 
-## Changelog
-- June 15, 2025. Initial setup
+## Recent Changes
+- June 15, 2025: Added dismissible checkbox to intro guide - users can now permanently hide the onboarding wizard after completing it
+- June 15, 2025: Enhanced platform with comprehensive Islamic Studies lesson content showcasing educational capabilities
+- June 15, 2025: Fixed profile page tab spacing and notifications button routing for all user roles
+- June 15, 2025: Initial platform setup with role-based access control and core educational features
 
 ## User Preferences
 

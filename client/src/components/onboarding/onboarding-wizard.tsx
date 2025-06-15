@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Dialog, 
   DialogContent, 
@@ -150,6 +151,7 @@ const steps = [
 export function OnboardingWizard() {
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const { user } = useAuth();
   const totalSteps = steps.length;
   const currentStepData = steps.find(step => step.id === currentStep);
@@ -157,11 +159,12 @@ export function OnboardingWizard() {
 
   // Check if this is the first login for the user
   useEffect(() => {
-    // In a real app, you'd check if the user has completed onboarding before
-    // For this example, we'll just show it automatically
+    // Check if user has completed onboarding and their dismissal preference
     const hasSeenOnboarding = localStorage.getItem(`onboarding-completed-${user?.id}`);
+    const hasDismissedPermanently = localStorage.getItem(`onboarding-dismissed-${user?.id}`);
     
-    if (user && !hasSeenOnboarding) {
+    // Only show if user hasn't seen it and hasn't permanently dismissed it
+    if (user && !hasSeenOnboarding && !hasDismissedPermanently) {
       setOpen(true);
     }
   }, [user]);
@@ -173,6 +176,10 @@ export function OnboardingWizard() {
       // Mark onboarding as completed
       if (user) {
         localStorage.setItem(`onboarding-completed-${user.id}`, 'true');
+        // If user checked "don't show again", save that preference
+        if (dontShowAgain) {
+          localStorage.setItem(`onboarding-dismissed-${user.id}`, 'true');
+        }
       }
       setOpen(false);
     }
@@ -182,6 +189,10 @@ export function OnboardingWizard() {
     // Mark onboarding as completed
     if (user) {
       localStorage.setItem(`onboarding-completed-${user.id}`, 'true');
+      // If user checked "don't show again", save that preference
+      if (dontShowAgain) {
+        localStorage.setItem(`onboarding-dismissed-${user.id}`, 'true');
+      }
     }
     setOpen(false);
   };
@@ -227,6 +238,20 @@ export function OnboardingWizard() {
               <span>Step {currentStep} of {totalSteps}</span>
               <span>{Math.round(progress)}% Complete</span>
             </div>
+          </div>
+
+          <div className="flex items-center space-x-2 pt-4 pb-2">
+            <Checkbox 
+              id="dont-show-again"
+              checked={dontShowAgain}
+              onCheckedChange={(checked) => setDontShowAgain(checked === true)}
+            />
+            <label 
+              htmlFor="dont-show-again" 
+              className="text-sm text-muted-foreground cursor-pointer"
+            >
+              Don't show this guide again
+            </label>
           </div>
 
           <DialogFooter className="flex sm:justify-between">
