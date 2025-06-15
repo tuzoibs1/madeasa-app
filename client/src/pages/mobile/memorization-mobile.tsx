@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Redirect } from "wouter";
+import { Redirect, useRoute } from "wouter";
 import MobileAppShell from "@/components/mobile/mobile-app-shell";
 import { MobileCard } from "@/components/mobile/mobile-card";
 import { Loader2, BookOpen, Award, CheckCircle } from "lucide-react";
@@ -20,6 +20,8 @@ interface Memorization {
 export default function MemorizationMobile() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const [match, params] = useRoute("/memorization/:id");
+  const memorizationId = params?.id;
   
   // Fetch memorization data - always call hooks before any conditional returns
   const { data: memorizations, isLoading } = useQuery<Memorization[]>({
@@ -44,6 +46,12 @@ export default function MemorizationMobile() {
   
   // Initialize with empty array if no data is available
   const memorizationItems: Memorization[] = memorizations || [];
+  
+  // If viewing a specific memorization by ID, filter or find it
+  let currentMemorization = null;
+  if (memorizationId) {
+    currentMemorization = memorizationItems.find(m => m.id === parseInt(memorizationId));
+  }
   
   // Add sample data for demo if no data available
   if (memorizationItems.length === 0) {
@@ -73,6 +81,11 @@ export default function MemorizationMobile() {
         nextReview: "2023-05-19T16:15:00Z"
       }
     );
+    
+    // Update currentMemorization after adding sample data
+    if (memorizationId) {
+      currentMemorization = memorizationItems.find(m => m.id === parseInt(memorizationId));
+    }
   }
   
   const formatDate = (dateString: string) => {

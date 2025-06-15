@@ -168,6 +168,19 @@ function Router() {
         component={CommunityPage} 
       />
       
+      {/* Profile page */}
+      <ProtectedRoute 
+        path="/profile" 
+        component={() => (
+          <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <h1 className="text-2xl font-bold">Profile Page</h1>
+              <p className="text-muted-foreground">User profile management coming soon</p>
+            </div>
+          </div>
+        )}
+      />
+      
       {/* Course pages */}
       <ProtectedRoute 
         path="/courses/:courseId" 
