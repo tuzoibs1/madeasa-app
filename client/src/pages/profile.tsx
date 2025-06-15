@@ -145,14 +145,14 @@ export default function ProfilePage() {
         </div>
 
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 gap-2">
-            <TabsTrigger value="general" className="px-4 py-2">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="general">
               General
             </TabsTrigger>
-            <TabsTrigger value="security" className="px-4 py-2">
+            <TabsTrigger value="security">
               Security
             </TabsTrigger>
-            <TabsTrigger value="activity" className="px-4 py-2">
+            <TabsTrigger value="activity">
               Activity
             </TabsTrigger>
           </TabsList>

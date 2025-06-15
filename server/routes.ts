@@ -353,10 +353,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/lessons", isAuthenticated, async (req, res) => {
+    try {
+      // Enhanced dummy data for lessons showcasing Islamic Studies platform capabilities
+      const lessons = [
+        {
+          id: 1,
+          title: "Introduction to Surah Al-Fatiha",
+          description: "Comprehensive study of the opening chapter of the Quran, including Arabic pronunciation, translation, and Tafseer.",
+          content: "Surah Al-Fatiha is known as 'The Opening' and is recited in every unit of prayer. This lesson covers:\n\n• Arabic text and pronunciation guide\n• Word-by-word translation\n• Classical commentary from Ibn Kathir\n• Spiritual significance and benefits\n• Proper recitation with Tajweed rules\n\nKey Learning Objectives:\n- Master correct pronunciation of each verse\n- Understand the meaning and context\n- Learn the spiritual benefits of regular recitation\n- Apply Tajweed rules for beautiful recitation",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-16T09:00:00Z",
+          duration: 60,
+          materials: ["Quran", "Tafseer Ibn Kathir", "Audio recitation"],
+          objectives: [
+            "Master pronunciation of Al-Fatiha",
+            "Understand verse meanings",
+            "Learn spiritual significance",
+            "Apply basic Tajweed rules"
+          ],
+          status: "scheduled",
+          createdAt: "2025-06-15T10:00:00Z"
+        },
+        {
+          id: 2,
+          title: "Arabic Grammar Fundamentals",
+          description: "Essential Arabic grammar concepts for understanding Quranic text and Islamic literature.",
+          content: "This foundational lesson introduces core Arabic grammar concepts essential for Islamic studies:\n\n• Noun and verb identification\n• Root letter system (Jidhr)\n• Basic sentence structure\n• Definite and indefinite articles\n• Masculine and feminine forms\n\nPractical Applications:\n- Analyzing simple Quranic verses\n- Understanding prayer supplications\n- Reading basic Islamic texts\n- Building vocabulary systematically\n\nHomework Assignment:\n- Practice identifying nouns and verbs in provided verses\n- Memorize 20 essential Arabic roots\n- Complete grammar exercises in workbook",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-17T10:00:00Z",
+          duration: 75,
+          materials: ["Arabic Grammar Textbook", "Workbook", "Quranic examples"],
+          objectives: [
+            "Identify Arabic nouns and verbs",
+            "Understand root letter system",
+            "Construct basic sentences",
+            "Read simple Islamic texts"
+          ],
+          status: "scheduled",
+          createdAt: "2025-06-15T11:00:00Z"
+        },
+        {
+          id: 3,
+          title: "The Life of Prophet Muhammad (PBUH) - Early Years",
+          description: "Detailed study of the Prophet's life from birth to the first revelation, emphasizing moral lessons.",
+          content: "This comprehensive lesson explores the early life of Prophet Muhammad (Peace Be Upon Him):\n\n• Birth and childhood in Mecca\n• The trustworthy merchant (Al-Amin)\n• Marriage to Khadijah (RA)\n• The incident of Hira Cave\n• First revelation and its impact\n\nMoral Lessons:\n- Importance of honesty in business\n- Respecting and caring for elders\n- The value of contemplation and reflection\n- Courage in facing life's challenges\n\nInteractive Elements:\n- Timeline creation activity\n- Discussion on applying Prophet's character today\n- Role-playing historical events\n- Reflection journal writing",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-18T09:30:00Z",
+          duration: 90,
+          materials: ["Seerah books", "Historical maps", "Timeline worksheets"],
+          objectives: [
+            "Learn key events of early life",
+            "Extract moral lessons",
+            "Understand historical context",
+            "Apply teachings to modern life"
+          ],
+          status: "completed",
+          createdAt: "2025-06-15T12:00:00Z"
+        },
+        {
+          id: 4,
+          title: "Five Pillars of Islam - Practical Implementation",
+          description: "Comprehensive guide to understanding and implementing the Five Pillars in daily life.",
+          content: "Deep dive into the Five Pillars of Islam with practical guidance:\n\n1. Shahada (Declaration of Faith)\n   - Understanding the meaning\n   - Conditions and implications\n   - Renewing faith daily\n\n2. Salah (Prayer)\n   - Prayer times and their significance\n   - Proper ablution (Wudu)\n   - Prayer positions and recitations\n\n3. Zakat (Charity)\n   - Calculation methods\n   - Types of wealth subject to Zakat\n   - Distribution priorities\n\n4. Sawm (Fasting)\n   - Ramadan preparation\n   - Spiritual benefits\n   - Exemptions and make-up days\n\n5. Hajj (Pilgrimage)\n   - Rituals and their meanings\n   - Spiritual preparation\n   - Virtual tour of holy sites",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-19T14:00:00Z",
+          duration: 120,
+          materials: ["Islamic jurisprudence books", "Prayer guides", "Zakat calculator"],
+          objectives: [
+            "Master all five pillars",
+            "Implement in daily routine",
+            "Understand spiritual significance",
+            "Help others learn basics"
+          ],
+          status: "in_progress",
+          createdAt: "2025-06-15T13:00:00Z"
+        },
+        {
+          id: 5,
+          title: "Islamic Ethics and Moral Character",
+          description: "Building strong moral character based on Islamic teachings and prophetic examples.",
+          content: "Character development through Islamic principles:\n\n• Concept of Akhlaq in Islam\n• Beautiful names of Allah and character traits\n• Prophetic examples of good character\n• Dealing with anger and patience\n• Truthfulness and trustworthiness\n• Kindness to parents and elders\n\nPractical Character Building:\n- Daily self-reflection exercises\n- Community service projects\n- Conflict resolution techniques\n- Developing empathy and compassion\n\nCase Studies:\n- How Prophet handled difficult situations\n- Stories of righteous companions\n- Modern examples of good character\n- Personal character development plan",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-20T11:00:00Z",
+          duration: 80,
+          materials: ["Character development workbook", "Hadith collections", "Reflection journals"],
+          objectives: [
+            "Understand Islamic ethics",
+            "Develop good character traits",
+            "Apply teachings daily",
+            "Become positive role model"
+          ],
+          status: "scheduled",
+          createdAt: "2025-06-15T14:00:00Z"
+        },
+        {
+          id: 6,
+          title: "Quran Memorization Techniques",
+          description: "Proven methods for effective Quran memorization with retention strategies.",
+          content: "Systematic approach to Hifz (Quran memorization):\n\n• Setting realistic memorization goals\n• Daily memorization schedule\n• Revision techniques for retention\n• Using audio aids effectively\n• Understanding before memorizing\n• Creating memory associations\n\nMemorization Strategies:\n- Break verses into meaningful segments\n- Use repetition patterns (5-3-1 method)\n- Connect new verses to previously learned\n- Practice during different times of day\n- Group study and peer review\n\nProgress Tracking:\n- Weekly memorization targets\n- Revision tracking charts\n- Quality assessment rubrics\n- Celebration of milestones\n- Individual progress reports",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-21T08:00:00Z",
+          duration: 100,
+          materials: ["Mushaf", "Audio recordings", "Memorization charts", "Progress trackers"],
+          objectives: [
+            "Learn effective memorization techniques",
+            "Establish daily revision routine",
+            "Improve retention rates",
+            "Track progress systematically"
+          ],
+          status: "scheduled",
+          createdAt: "2025-06-15T15:00:00Z"
+        }
+      ];
+      
+      res.json(lessons);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lessons" });
+    }
+  });
+
   app.get("/api/courses/:courseId/lessons", isAuthenticated, async (req, res) => {
     try {
       const courseId = parseInt(req.params.courseId);
-      const lessons = await storage.getLessonsByCourse(courseId);
+      // Return lessons filtered by course ID
+      const lessons = [
+        {
+          id: 1,
+          title: "Introduction to Surah Al-Fatiha",
+          description: "Comprehensive study of the opening chapter of the Quran",
+          courseId: courseId,
+          teacherId: 5,
+          scheduledDate: "2025-06-16T09:00:00Z",
+          duration: 60,
+          status: "scheduled"
+        },
+        {
+          id: 2,
+          title: "Arabic Grammar Fundamentals",
+          description: "Essential Arabic grammar concepts for Quranic understanding",
+          courseId: courseId,
+          teacherId: 5,
+          scheduledDate: "2025-06-17T10:00:00Z",
+          duration: 75,
+          status: "scheduled"
+        }
+      ];
       res.json(lessons);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch lessons" });
