@@ -24,11 +24,9 @@ export function MobileCard({
   
   if (to) {
     return (
-      <Link href={to}>
-        <a className={classes}>
-          {children}
-          <ChevronRight className="h-5 w-5 text-slate-400" />
-        </a>
+      <Link href={to} className={classes}>
+        {children}
+        <ChevronRight className="h-5 w-5 text-slate-400" />
       </Link>
     );
   }
