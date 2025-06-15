@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Building2, Users, MessageSquare, BarChart3, Settings, 
   Eye, Edit, CheckCircle, XCircle, Clock, AlertTriangle,
@@ -56,6 +60,15 @@ export default function CompanyAdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
+  const [isNewOrgDialogOpen, setIsNewOrgDialogOpen] = useState(false);
+  const [newOrgData, setNewOrgData] = useState({
+    name: "",
+    location: "",
+    contactEmail: "",
+    adminFullName: "",
+    adminUsername: "",
+    subscriptionPlan: "trial"
+  });
 
   // Company overview data
   const { data: overview, isLoading: overviewLoading } = useQuery({
@@ -83,6 +96,89 @@ export default function CompanyAdminDashboard() {
     queryKey: ["/api/company-admin/users"],
     enabled: !!user && user.role === 'company_admin'
   });
+
+  // Create organization mutation
+  const createOrganizationMutation = useMutation({
+    mutationFn: async (orgData: typeof newOrgData) => {
+      const response = await apiRequest("POST", "/api/company-admin/organizations", orgData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Organization Created",
+        description: "New organization has been successfully created.",
+      });
+      setIsNewOrgDialogOpen(false);
+      setNewOrgData({
+        name: "",
+        location: "",
+        contactEmail: "",
+        adminFullName: "",
+        adminUsername: "",
+        subscriptionPlan: "trial"
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/company-admin/organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/company-admin/overview"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create organization.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Export report function
+  const handleExportReport = () => {
+    try {
+      const reportData = {
+        overview: (overview as any)?.data,
+        organizations,
+        feedback,
+        allUsers: (allUsers as any)?.data,
+        exportDate: new Date().toISOString(),
+        exportedBy: user?.fullName
+      };
+
+      const dataStr = JSON.stringify(reportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `madrasa-app-report-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Report Exported",
+        description: "Company report has been downloaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle create organization
+  const handleCreateOrganization = () => {
+    if (!newOrgData.name || !newOrgData.location || !newOrgData.contactEmail || !newOrgData.adminFullName || !newOrgData.adminUsername) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createOrganizationMutation.mutate(newOrgData);
+  };
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
@@ -141,15 +237,117 @@ export default function CompanyAdminDashboard() {
             <p className="text-slate-600">Complete oversight of all MadrasaApp business accounts</p>
           </div>
           
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleExportReport}
+              className="w-full sm:w-auto touch-manipulation"
+            >
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </Button>
-            <Button variant="outline" size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              New Organization
-            </Button>
+            <Dialog open={isNewOrgDialogOpen} onOpenChange={setIsNewOrgDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="w-full sm:w-auto touch-manipulation"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Organization
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Create New Organization</DialogTitle>
+                  <DialogDescription>
+                    Add a new organization to the MadrasaApp platform.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="orgName">Organization Name *</Label>
+                    <Input
+                      id="orgName"
+                      placeholder="Enter organization name"
+                      value={newOrgData.name}
+                      onChange={(e) => setNewOrgData({ ...newOrgData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="location">Location *</Label>
+                    <Input
+                      id="location"
+                      placeholder="City, Country"
+                      value={newOrgData.location}
+                      onChange={(e) => setNewOrgData({ ...newOrgData, location: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="contactEmail">Contact Email *</Label>
+                    <Input
+                      id="contactEmail"
+                      type="email"
+                      placeholder="admin@organization.com"
+                      value={newOrgData.contactEmail}
+                      onChange={(e) => setNewOrgData({ ...newOrgData, contactEmail: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="adminFullName">Admin Full Name *</Label>
+                    <Input
+                      id="adminFullName"
+                      placeholder="Administrator full name"
+                      value={newOrgData.adminFullName}
+                      onChange={(e) => setNewOrgData({ ...newOrgData, adminFullName: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="adminUsername">Admin Username *</Label>
+                    <Input
+                      id="adminUsername"
+                      placeholder="admin_username"
+                      value={newOrgData.adminUsername}
+                      onChange={(e) => setNewOrgData({ ...newOrgData, adminUsername: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="subscriptionPlan">Subscription Plan</Label>
+                    <Select 
+                      value={newOrgData.subscriptionPlan} 
+                      onValueChange={(value) => setNewOrgData({ ...newOrgData, subscriptionPlan: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select plan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="trial">Trial (30 days)</SelectItem>
+                        <SelectItem value="basic">Basic Plan</SelectItem>
+                        <SelectItem value="premium">Premium Plan</SelectItem>
+                        <SelectItem value="enterprise">Enterprise Plan</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsNewOrgDialogOpen(false)}
+                    className="w-full sm:w-auto"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleCreateOrganization}
+                    disabled={createOrganizationMutation.isPending}
+                    className="w-full sm:w-auto"
+                  >
+                    {createOrganizationMutation.isPending ? "Creating..." : "Create Organization"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
