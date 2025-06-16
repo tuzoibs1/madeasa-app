@@ -241,8 +241,8 @@ export default function AttendancePage() {
               <CardTitle className="text-lg">Record Daily Attendance</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="w-full md:w-1/3">
+              <div className="flex flex-col lg:flex-row gap-6 mb-6">
+                <div className="w-full lg:w-1/3 space-y-4">
                   <div className="flex items-center mb-4 justify-between">
                     <Button
                       variant="outline"
@@ -270,16 +270,16 @@ export default function AttendancePage() {
                     </Button>
                   </div>
 
-                  <div className="mb-4">
+                  <div>
                     <Calendar
                       mode="single"
                       selected={selectedDate}
                       onSelect={(date) => date && setSelectedDate(date)}
-                      className="rounded-md border shadow"
+                      className="rounded-md border shadow w-full"
                     />
                   </div>
 
-                  <div className="mb-4">
+                  <div>
                     <Select
                       value={selectedCourse}
                       onValueChange={setSelectedCourse}
@@ -299,7 +299,7 @@ export default function AttendancePage() {
                   </div>
                 </div>
 
-                <div className="w-full md:w-2/3">
+                <div className="w-full lg:w-2/3">
                   {selectedCourse ? (
                     isLoadingData ? (
                       <div className="space-y-4">
