@@ -112,6 +112,8 @@ Required environment variables:
 - `API_KEY`: External API authentication
 
 ## Recent Changes
+- June 16, 2025: Enhanced responsive design for lesson pages - optimized buttons and layout for smooth functionality across mobile, tablet, and desktop displays
+- June 15, 2025: Created individual lesson pages with dedicated URLs - each lesson now opens in its own page with full content, learning objectives, and materials
 - June 15, 2025: Fixed 404 error for individual lesson URLs - added missing API endpoint and URL parameter handling for direct lesson access
 - June 15, 2025: Fixed "View Profile" button in student directory - added navigation functionality and comprehensive student profile page with detailed information display
 - June 15, 2025: Fixed attendance page runtime error - added null checking to prevent undefined name values from causing split() errors
