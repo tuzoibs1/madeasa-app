@@ -197,7 +197,11 @@ export default function StudentsPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button variant="outline" size="sm">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setLocation(`/students/${student.id}/profile`)}
+                              >
                                 <UserCheck className="h-4 w-4 mr-1" />
                                 View Profile
                               </Button>

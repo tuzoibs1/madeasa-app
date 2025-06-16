@@ -29,6 +29,7 @@ import MemorizationPage from "@/pages/memorization";
 import LessonsPage from "@/pages/lessons";
 import StudentsPage from "@/pages/students";
 import NewStudentPage from "@/pages/students/new-student";
+import StudentProfile from "@/pages/students/student-profile";
 import TeachersPage from "@/pages/teachers";
 import AboutPage from "@/pages/about";
 import CourseDetailsPage from "@/pages/courses/course-details";
