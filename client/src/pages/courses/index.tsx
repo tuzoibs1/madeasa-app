@@ -293,10 +293,106 @@ export default function CoursesPage() {
                   : "No courses have been created yet"}
               </p>
               {isTeacherOrDirector && (
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create First Course
-                </Button>
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create First Course
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Course</DialogTitle>
+                      <DialogDescription>
+                        Create a new course for your students to join and learn.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Course Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter course name" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Describe what students will learn in this course" 
+                                  {...field} 
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="startDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Start Date (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="date" 
+                                    {...field}
+                                    value={field.value ? new Date(field.value).toISOString().split('T')[0] : ""}
+                                    onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : null)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="endDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>End Date (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="date" 
+                                    {...field}
+                                    value={field.value ? new Date(field.value).toISOString().split('T')[0] : ""}
+                                    onChange={(e) => field.onChange(e.target.value ? new Date(e.target.value) : null)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <DialogFooter>
+                          <Button type="submit" disabled={createCourseMutation.isPending}>
+                            {createCourseMutation.isPending && (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            )}
+                            Create Course
+                          </Button>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </DialogContent>
+                </Dialog>
               )}
             </CardContent>
           </Card>
