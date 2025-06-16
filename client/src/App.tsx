@@ -28,6 +28,7 @@ import AttendancePage from "@/pages/attendance";
 import MemorizationPage from "@/pages/memorization";
 import LessonsPage from "@/pages/lessons";
 import LessonDetailPage from "@/pages/lessons/lesson-detail";
+import CoursesPage from "@/pages/courses";
 import StudentsPage from "@/pages/students";
 import NewStudentPage from "@/pages/students/new-student";
 import StudentProfile from "@/pages/students/student-profile";
@@ -138,6 +139,11 @@ function Router() {
       <ProtectedRoute 
         path="/lessons/:id" 
         component={isMobile ? LessonsMobile : LessonDetailPage} 
+      />
+      <ProtectedRoute 
+        path="/courses" 
+        component={CoursesPage} 
+        allowedRoles={["director", "teacher"]} 
       />
       <ProtectedRoute 
         path="/students/new" 
