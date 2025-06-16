@@ -58,6 +58,8 @@ export default function LessonsPage() {
   const { toast } = useToast();
   const params = useParams();
   const lessonId = params.id;
+  
+  console.log('Route params:', params);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
