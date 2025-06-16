@@ -29,12 +29,12 @@ import MemorizationPage from "@/pages/memorization";
 import LessonsPage from "@/pages/lessons";
 import LessonDetailPage from "@/pages/lessons/lesson-detail";
 import CoursesPage from "@/pages/courses";
+import CourseDetailsPage from "@/pages/courses/course-details";
 import StudentsPage from "@/pages/students";
 import NewStudentPage from "@/pages/students/new-student";
 import StudentProfile from "@/pages/students/student-profile";
 import TeachersPage from "@/pages/teachers";
 import AboutPage from "@/pages/about";
-import CourseDetailsPage from "@/pages/courses/course-details";
 import SubmissionsPage from "@/pages/assignments/submissions";
 import AnalyticsDashboard from "@/pages/analytics/analytics-dashboard";
 import QADashboard from "@/pages/qa/qa-dashboard";
@@ -143,6 +143,11 @@ function Router() {
       <ProtectedRoute 
         path="/courses" 
         component={CoursesPage} 
+        allowedRoles={["director", "teacher"]} 
+      />
+      <ProtectedRoute 
+        path="/courses/:courseId" 
+        component={CourseDetailsPage} 
         allowedRoles={["director", "teacher"]} 
       />
       <ProtectedRoute 

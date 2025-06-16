@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import Layout from "@/components/layout/layout";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -279,7 +279,7 @@ export default function CoursesPage() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Avg Students</p>
                     <p className="text-2xl font-bold">
-                      {Math.round(courses.reduce((sum, course) => sum + course.totalStudents, 0) / courses.length)}
+                      {courses.length > 0 ? Math.round(courses.reduce((sum, course) => sum + course.totalStudents, 0) / courses.length) : 0}
                     </p>
                   </div>
                   <Clock className="h-8 w-8 text-muted-foreground" />
