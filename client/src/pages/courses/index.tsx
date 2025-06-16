@@ -1,8 +1,14 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import Layout from "@/components/layout/layout";
 import { useAuth } from "@/hooks/use-auth";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { insertCourseSchema } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -20,6 +26,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
 import {
   BookOpen,
   Users,
@@ -50,10 +76,49 @@ export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterLevel, setFilterLevel] = useState("all");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof insertCourseSchema>>({
+    resolver: zodResolver(insertCourseSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      teacherId: user?.id || 0,
+      startDate: null,
+      endDate: null
+    }
+  });
 
   const { data: courses, isLoading } = useQuery<Course[]>({
     queryKey: ["/api/courses"],
   });
+
+  const createCourseMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof insertCourseSchema>) => {
+      return apiRequest('POST', '/api/courses', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Course created",
+        description: "Your course has been created successfully."
+      });
+      form.reset();
+      setIsCreateDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/courses'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Creation failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const onSubmit = (data: z.infer<typeof insertCourseSchema>) => {
+    createCourseMutation.mutate(data);
+  };
 
   const isTeacherOrDirector = user?.role === "teacher" || user?.role === "director";
 
