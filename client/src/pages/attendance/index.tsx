@@ -188,7 +188,10 @@ export default function AttendancePage() {
   };
 
   // Helper to get initials from full name
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | undefined) => {
+    if (!name || typeof name !== 'string') {
+      return "??";
+    }
     return name
       .split(" ")
       .map((n) => n[0])
@@ -478,7 +481,13 @@ export default function AttendancePage() {
                                 {student?.fullName || `Student #${record.studentId}`}
                               </TableCell>
                               <TableCell>
-                                {format(new Date(record.date), "MMM d, yyyy")}
+                                {(() => {
+                                  try {
+                                    return record.date ? format(new Date(record.date), "MMM d, yyyy") : "No date";
+                                  } catch {
+                                    return "Invalid date";
+                                  }
+                                })()}
                               </TableCell>
                               <TableCell>{getStatusBadge(record.status)}</TableCell>
                               <TableCell>{record.notes || "-"}</TableCell>
