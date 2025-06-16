@@ -144,6 +144,7 @@ export default function TeacherDashboard() {
             value: "2 new this week",
             type: "increase",
           }}
+          href="/students"
         />
 
         <StatCard
@@ -155,6 +156,7 @@ export default function TeacherDashboard() {
             value: "Same as last month",
             type: "neutral",
           }}
+          href="/courses"
         />
 
         <StatCard
@@ -166,6 +168,7 @@ export default function TeacherDashboard() {
             value: "1% from last week",
             type: "decrease",
           }}
+          href="/attendance"
         />
 
         <StatCard
