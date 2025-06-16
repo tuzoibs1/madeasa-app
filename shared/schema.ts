@@ -196,7 +196,9 @@ export const insertLessonSchema = createInsertSchema(lessons).omit({ id: true, c
 export const insertEventSchema = createInsertSchema(events).omit({ id: true });
 export const insertParentStudentRelationSchema = createInsertSchema(parentStudentRelations).omit({ id: true, createdAt: true });
 export const insertMaterialSchema = createInsertSchema(materials).omit({ id: true, createdAt: true });
-export const insertAssignmentSchema = createInsertSchema(assignments).omit({ id: true, createdAt: true });
+export const insertAssignmentSchema = createInsertSchema(assignments).omit({ id: true, createdAt: true }).extend({
+  dueDate: z.string().optional().transform((val) => val ? new Date(val) : null)
+});
 export const insertSubmissionSchema = createInsertSchema(submissions).omit({ id: true, submittedAt: true, gradedAt: true });
 export const insertUserFeedbackSchema = createInsertSchema(userFeedback).omit({ id: true, createdAt: true, updatedAt: true, resolvedAt: true });
 export const insertFeedbackCommentSchema = createInsertSchema(feedbackComments).omit({ id: true, createdAt: true });
