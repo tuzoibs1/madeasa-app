@@ -216,7 +216,10 @@ export default function MemorizationPage() {
   });
 
   // Helper to get initials from full name
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | undefined) => {
+    if (!name || typeof name !== 'string') {
+      return "??";
+    }
     return name
       .split(" ")
       .map((n) => n[0])

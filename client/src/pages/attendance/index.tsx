@@ -117,13 +117,14 @@ export default function AttendancePage() {
 
     if (students && attendanceRecords) {
       // Map students with their attendance status if it exists
-      const formattedStudents = students.map((student) => {
+      const formattedStudents: { id: number; status: "present" | "absent" }[] = students.map((student) => {
         const record = attendanceRecords.find(
           (record) => record.studentId === student.id
         );
+        const status = record?.status;
         return {
           id: student.id,
-          status: (record?.status === "present" || record?.status === "absent") ? record.status : "present",
+          status: (status === "present" || status === "absent") ? status : "present",
         };
       });
       form.setValue("students", formattedStudents);
