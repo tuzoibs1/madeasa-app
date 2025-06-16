@@ -82,10 +82,10 @@ export default function LessonsPage() {
     enabled: !!lessonId,
   });
 
-  // Fetch all lessons to find lesson by ID
+  // Fetch all lessons to find lesson by ID (fallback)
   const { data: allLessons, isLoading: allLessonsLoading } = useQuery<Lesson[]>({
     queryKey: ["/api/lessons"],
-    enabled: !!lessonId && !specificLesson,
+    enabled: !!lessonId,
   });
 
   // Form for adding new lesson
@@ -102,8 +102,11 @@ export default function LessonsPage() {
 
   // Handle lesson selection when accessing via URL
   useEffect(() => {
-    if (lessonId && (specificLesson || allLessons)) {
+    console.log('URL Effect:', { lessonId, specificLesson, allLessons: allLessons?.length });
+    if (lessonId) {
+      // Try specific lesson first, then fallback to all lessons
       const lesson = specificLesson || allLessons?.find(l => l.id === parseInt(lessonId));
+      console.log('Found lesson:', lesson);
       if (lesson) {
         setSelectedLesson(lesson);
         setActiveTab("lesson-view");
