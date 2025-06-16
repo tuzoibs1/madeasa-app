@@ -270,7 +270,7 @@ export default function CoursesPage() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Total Students</p>
                     <p className="text-2xl font-bold">
-                      {courses.reduce((sum, course) => sum + course.totalStudents, 0)}
+                      {courses.reduce((sum, course) => sum + (course.totalStudents || 0), 0)}
                     </p>
                   </div>
                   <Users className="h-8 w-8 text-muted-foreground" />
@@ -283,7 +283,7 @@ export default function CoursesPage() {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Avg Students</p>
                     <p className="text-2xl font-bold">
-                      {courses.length > 0 ? Math.round(courses.reduce((sum, course) => sum + course.totalStudents, 0) / courses.length) : 0}
+                      {courses.length > 0 ? Math.round(courses.reduce((sum, course) => sum + (course.totalStudents || 0), 0) / courses.length) : 0}
                     </p>
                   </div>
                   <Clock className="h-8 w-8 text-muted-foreground" />
