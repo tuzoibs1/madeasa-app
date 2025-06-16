@@ -112,6 +112,7 @@ Required environment variables:
 - `API_KEY`: External API authentication
 
 ## Recent Changes
+- June 15, 2025: Fixed "View Profile" button in student directory - added navigation functionality and comprehensive student profile page with detailed information display
 - June 15, 2025: Fixed attendance page runtime error - added null checking to prevent undefined name values from causing split() errors
 - June 15, 2025: Added "Mark as Unread" functionality to notifications - users can now toggle notification status both ways with proper visual feedback
 - June 15, 2025: Fixed "Mark as Read" button functionality in notifications - users can now mark notifications as read with proper state management and visual feedback

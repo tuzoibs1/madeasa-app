@@ -145,6 +145,11 @@ function Router() {
         allowedRoles={["director", "teacher"]} 
       />
       <ProtectedRoute 
+        path="/students/:id/profile" 
+        component={StudentProfile} 
+        allowedRoles={["director", "teacher"]} 
+      />
+      <ProtectedRoute 
         path="/teachers" 
         component={TeachersPage} 
         allowedRoles={["director"]} 

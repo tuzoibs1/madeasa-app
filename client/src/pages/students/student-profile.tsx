@@ -327,11 +327,11 @@ export default function StudentProfile() {
                             <div className="flex items-center gap-4 text-xs text-slate-500">
                               <div className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                <span>{course.duration || "N/A"}</span>
+                                <span>Standard Duration</span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <GraduationCap className="h-3 w-3" />
-                                <span>Level {course.level || "1"}</span>
+                                <span>Beginner Level</span>
                               </div>
                             </div>
                           </CardContent>
