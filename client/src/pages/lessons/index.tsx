@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import Layout from "@/components/layout/layout";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -56,10 +56,13 @@ type NewLessonValues = z.infer<typeof newLessonSchema>;
 export default function LessonsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [location] = useLocation();
   const params = useParams();
-  const lessonId = params.id;
   
-  console.log('Route params:', params);
+  // Extract lesson ID from URL path /lessons/2 -> 2
+  const lessonId = location.split('/lessons/')[1] || params.id;
+  
+  console.log('Location:', location, 'Params:', params, 'Lesson ID:', lessonId);
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
