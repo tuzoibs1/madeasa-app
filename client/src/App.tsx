@@ -27,6 +27,7 @@ import MemorizationMobile from "@/pages/mobile/memorization-mobile";
 import AttendancePage from "@/pages/attendance";
 import MemorizationPage from "@/pages/memorization";
 import LessonsPage from "@/pages/lessons";
+import LessonDetailPage from "@/pages/lessons/lesson-detail";
 import StudentsPage from "@/pages/students";
 import NewStudentPage from "@/pages/students/new-student";
 import StudentProfile from "@/pages/students/student-profile";
@@ -136,7 +137,7 @@ function Router() {
       />
       <ProtectedRoute 
         path="/lessons/:id" 
-        component={isMobile ? LessonsMobile : LessonsPage} 
+        component={isMobile ? LessonsMobile : LessonDetailPage} 
       />
       <ProtectedRoute 
         path="/students/new" 
