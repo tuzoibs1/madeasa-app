@@ -46,6 +46,7 @@ interface Course {
 
 export default function CoursesPage() {
   const { user } = useAuth();
+  const [_, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterLevel, setFilterLevel] = useState("all");
@@ -79,7 +80,10 @@ export default function CoursesPage() {
             </p>
           </div>
           {isTeacherOrDirector && (
-            <Button className="w-full sm:w-auto">
+            <Button 
+              onClick={() => alert('Course creation feature coming soon!')} 
+              className="w-full sm:w-auto"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Course
             </Button>
