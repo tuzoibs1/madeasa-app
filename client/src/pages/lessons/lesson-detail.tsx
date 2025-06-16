@@ -116,29 +116,33 @@ export default function LessonDetailPage() {
     <Layout title={lesson.title}>
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/lessons">
-            <Button variant="outline" size="sm">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+          <Link href="/lessons" className="self-start">
+            <Button variant="outline" size="sm" className="min-w-fit">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Lessons
+              <span className="hidden xs:inline">Back to Lessons</span>
+              <span className="xs:hidden">Back</span>
             </Button>
           </Link>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{lesson.title}</h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold break-words">{lesson.title}</h1>
             {course && (
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm sm:text-base mt-1">
                 {course.name}
               </p>
             )}
           </div>
-          <Badge variant={lesson.status === 'scheduled' ? 'default' : 'secondary'}>
+          <Badge 
+            variant={lesson.status === 'scheduled' ? 'default' : 'secondary'}
+            className="self-start sm:self-center"
+          >
             {lesson.status}
           </Badge>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 order-2 lg:order-1">
             {/* Description */}
             <Card>
               <CardHeader>
@@ -221,7 +225,7 @@ export default function LessonDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 order-1 lg:order-2">
             {/* Lesson Details */}
             <Card>
               <CardHeader>

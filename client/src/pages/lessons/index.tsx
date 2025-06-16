@@ -171,16 +171,16 @@ export default function LessonsPage() {
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="text-lg">Available Lessons</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <CardTitle className="text-lg sm:text-xl">Available Lessons</CardTitle>
             
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <Select
                 value={selectedCourse}
                 onValueChange={setSelectedCourse}
                 disabled={coursesLoading}
               >
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px] min-w-[160px]">
                   <SelectValue placeholder="Select Class" />
                 </SelectTrigger>
                 <SelectContent>
@@ -195,9 +195,13 @@ export default function LessonsPage() {
               {isTeacherOrDirector && selectedCourse && (
                 <Dialog open={addLessonOpen} onOpenChange={setAddLessonOpen}>
                   <DialogTrigger asChild>
-                    <Button className="flex-shrink-0" disabled={!selectedCourse || addLessonMutation.isPending}>
+                    <Button 
+                      className="w-full sm:w-auto flex-shrink-0" 
+                      disabled={!selectedCourse || addLessonMutation.isPending}
+                    >
                       <PlusCircle className="h-4 w-4 mr-2" />
-                      Add Lesson
+                      <span className="hidden xs:inline">Add Lesson</span>
+                      <span className="xs:hidden">Add</span>
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -310,34 +314,36 @@ export default function LessonsPage() {
             </div>
           ) : selectedCourse ? (
             lessons && lessons.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {lessons
                   .sort((a, b) => a.orderIndex - b.orderIndex)
                   .map((lesson) => (
-                    <Card key={lesson.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                    <Card key={lesson.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 flex flex-col h-full">
                       <div className="bg-primary h-2" />
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-base">{lesson.title}</CardTitle>
-                          <Badge variant="outline" className="ml-2">
-                            Lesson {lesson.orderIndex}
+                      <CardHeader className="pb-3 flex-shrink-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <CardTitle className="text-sm sm:text-base leading-tight line-clamp-2 flex-1">
+                            {lesson.title}
+                          </CardTitle>
+                          <Badge variant="outline" className="text-xs whitespace-nowrap">
+                            #{lesson.orderIndex}
                           </Badge>
                         </div>
-                        <CardDescription className="line-clamp-2">
+                        <CardDescription className="line-clamp-2 text-xs sm:text-sm">
                           {lesson.description || "No description available"}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="h-16 overflow-hidden text-sm text-slate-600">
-                        <p className="line-clamp-3">
+                      <CardContent className="flex-1 pb-3">
+                        <p className="line-clamp-3 text-xs sm:text-sm text-slate-600">
                           {lesson.content ? (
-                            lesson.content.substring(0, 120) + (lesson.content.length > 120 ? "..." : "")
+                            lesson.content.substring(0, 100) + (lesson.content.length > 100 ? "..." : "")
                           ) : (
                             "No content available"
                           )}
                         </p>
                       </CardContent>
-                      <CardFooter className="border-t pt-3 flex justify-between">
-                        <div className="flex items-center text-xs text-slate-500">
+                      <CardFooter className="border-t pt-3 flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center">
+                        <div className="flex items-center text-xs text-slate-500 order-2 sm:order-1">
                           <FileText className="h-3 w-3 mr-1" />
                           <span>
                             {lesson.content ? 
@@ -345,14 +351,14 @@ export default function LessonsPage() {
                               "Quick read"}
                           </span>
                         </div>
-                        <Link href={`/lessons/${lesson.id}`}>
+                        <Link href={`/lessons/${lesson.id}`} className="order-1 sm:order-2">
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            className="text-primary"
+                            className="text-primary hover:bg-primary/10 w-full sm:w-auto"
                           >
-                            View Lesson
-                            <ChevronRight className="h-4 w-4 ml-1" />
+                            <span className="text-xs sm:text-sm">View Lesson</span>
+                            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
                           </Button>
                         </Link>
                       </CardFooter>
@@ -360,21 +366,25 @@ export default function LessonsPage() {
                   ))}
               </div>
             ) : (
-              <div className="text-center py-12 border rounded-md bg-slate-50">
-                <BookOpen className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-                <p className="text-slate-500 mb-2">No lessons found for this class</p>
+              <div className="text-center py-8 sm:py-12 border rounded-md bg-slate-50">
+                <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-slate-300 mb-3 sm:mb-4" />
+                <p className="text-slate-500 mb-3 text-sm sm:text-base">No lessons found for this class</p>
                 {isTeacherOrDirector && (
-                  <Button onClick={() => setAddLessonOpen(true)}>
+                  <Button 
+                    onClick={() => setAddLessonOpen(true)}
+                    className="w-full sm:w-auto"
+                  >
                     <PlusCircle className="h-4 w-4 mr-2" />
-                    Add First Lesson
+                    <span className="hidden xs:inline">Add First Lesson</span>
+                    <span className="xs:hidden">Add Lesson</span>
                   </Button>
                 )}
               </div>
             )
           ) : (
-            <div className="text-center py-12 border rounded-md bg-slate-50">
-              <BookOpen className="h-12 w-12 mx-auto text-slate-300 mb-4" />
-              <p className="text-slate-500">Select a class to view lessons</p>
+            <div className="text-center py-8 sm:py-12 border rounded-md bg-slate-50">
+              <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-slate-300 mb-3 sm:mb-4" />
+              <p className="text-slate-500 text-sm sm:text-base">Select a class to view lessons</p>
             </div>
           )}
         </CardContent>
