@@ -112,6 +112,8 @@ Required environment variables:
 - `API_KEY`: External API authentication
 
 ## Recent Changes
+- June 15, 2025: Fixed "Mark as Read" button functionality in notifications - users can now mark notifications as read with proper state management and visual feedback
+- June 15, 2025: Fixed Edit button functionality in Company Admin Dashboard - administrators can now modify organization details through working edit dialog
 - June 15, 2025: Added dismissible checkbox to intro guide - users can now permanently hide the onboarding wizard after completing it
 - June 15, 2025: Enhanced platform with comprehensive Islamic Studies lesson content showcasing educational capabilities
 - June 15, 2025: Fixed profile page tab spacing and notifications button routing for all user roles

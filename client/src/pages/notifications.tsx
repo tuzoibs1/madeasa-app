@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/layout/layout";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -34,10 +35,9 @@ interface Notification {
 
 function NotificationsPage() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
-
-  // Mock notifications data - replace with real API call
-  const notifications: Notification[] = [
+  const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: 1,
       title: "New Assignment Posted",
@@ -83,7 +83,23 @@ function NotificationsPage() {
       createdAt: "2025-06-13T16:00:00Z",
       priority: "medium"
     }
-  ];
+  ]);
+
+  // Mark notification as read
+  const markAsRead = (notificationId: number) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, isRead: true }
+          : notification
+      )
+    );
+    
+    toast({
+      title: "Notification marked as read",
+      description: "The notification has been marked as read.",
+    });
+  };
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -231,7 +247,11 @@ function NotificationsPage() {
                       </p>
                       {!notification.isRead && (
                         <div className="flex items-center space-x-2 mt-2">
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => markAsRead(notification.id)}
+                          >
                             Mark as Read
                           </Button>
                         </div>
