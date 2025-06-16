@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import Layout from "@/components/layout/layout";
 import { useAuth } from "@/hooks/use-auth";
@@ -109,16 +109,17 @@ export default function AttendancePage() {
   });
 
   // Update form values when course or date changes
-  useState(() => {
+  useEffect(() => {
+    console.log("Updating form values - selectedCourse:", selectedCourse, "students:", students?.length);
     if (selectedCourse) {
       form.setValue("courseId", selectedCourse);
     }
     form.setValue("date", formattedDate);
 
-    if (students && attendanceRecords) {
+    if (students && students.length > 0) {
       // Map students with their attendance status if it exists
       const formattedStudents: { id: number; status: "present" | "absent" }[] = students.map((student) => {
-        const record = attendanceRecords.find(
+        const record = attendanceRecords?.find(
           (record) => record.studentId === student.id
         );
         const status = record?.status;
@@ -127,13 +128,21 @@ export default function AttendancePage() {
           status: (status === "present" || status === "absent") ? status : "present",
         };
       });
+      console.log("Setting students in form:", formattedStudents);
       form.setValue("students", formattedStudents);
     }
-  });
+  }, [selectedCourse, formattedDate, students, attendanceRecords, form]);
 
   // Mutation for saving attendance
   const saveAttendanceMutation = useMutation({
     mutationFn: async (data: AttendanceFormValues) => {
+      console.log("Saving attendance data:", data);
+      
+      // Validate required fields
+      if (!data.courseId || !data.date || !data.students || data.students.length === 0) {
+        throw new Error("Missing required attendance data");
+      }
+      
       // Create attendance records for each student
       const promises = data.students.map(async (student) => {
         const attendanceData = {
@@ -144,12 +153,16 @@ export default function AttendancePage() {
           notes: "",
         };
         
+        console.log("Creating attendance record:", attendanceData);
+        
         // Validate with insert schema
         const validData = insertAttendanceSchema.parse(attendanceData);
         return apiRequest("POST", "/api/attendance", validData);
       });
       
-      return Promise.all(promises);
+      const results = await Promise.all(promises);
+      console.log("Attendance saved successfully:", results);
+      return results;
     },
     onSuccess: () => {
       toast({
@@ -185,6 +198,15 @@ export default function AttendancePage() {
 
   // Handle form submission
   const onSubmit = (values: AttendanceFormValues) => {
+    console.log("Form submission values:", values);
+    if (!values.courseId || !values.date || !values.students || values.students.length === 0) {
+      toast({
+        title: "Invalid Form Data",
+        description: "Please ensure a course is selected and students are present.",
+        variant: "destructive"
+      });
+      return;
+    }
     saveAttendanceMutation.mutate(values);
   };
 
@@ -407,8 +429,19 @@ export default function AttendancePage() {
                           </div>
 
                           <div className="flex justify-end mt-6">
-                            <Button type="submit" disabled={isMutating}>
-                              {isMutating ? "Saving..." : "Save Attendance"}
+                            <Button 
+                              type="submit" 
+                              disabled={isMutating || !selectedCourse || !students || students.length === 0}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              {isMutating ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                  Saving...
+                                </>
+                              ) : (
+                                "Save Attendance"
+                              )}
                             </Button>
                           </div>
                         </form>
