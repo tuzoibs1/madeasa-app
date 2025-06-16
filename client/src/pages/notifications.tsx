@@ -101,6 +101,22 @@ function NotificationsPage() {
     });
   };
 
+  // Mark notification as unread
+  const markAsUnread = (notificationId: number) => {
+    setNotifications(prev => 
+      prev.map(notification => 
+        notification.id === notificationId 
+          ? { ...notification, isRead: false }
+          : notification
+      )
+    );
+    
+    toast({
+      title: "Notification marked as unread",
+      description: "The notification has been marked as unread.",
+    });
+  };
+
   const getIcon = (type: string) => {
     switch (type) {
       case 'assignment':
@@ -245,8 +261,8 @@ function NotificationsPage() {
                       <p className={`text-sm ${!notification.isRead ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {notification.message}
                       </p>
-                      {!notification.isRead && (
-                        <div className="flex items-center space-x-2 mt-2">
+                      <div className="flex items-center space-x-2 mt-2">
+                        {!notification.isRead ? (
                           <Button 
                             size="sm" 
                             variant="outline"
@@ -254,8 +270,16 @@ function NotificationsPage() {
                           >
                             Mark as Read
                           </Button>
-                        </div>
-                      )}
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => markAsUnread(notification.id)}
+                          >
+                            Mark as Unread
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
