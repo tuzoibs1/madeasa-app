@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Memorization, Course } from "@shared/schema";
+import { useLocation } from "wouter";
 
 interface MemorizationClassProps {
   className: string;
@@ -12,18 +13,23 @@ interface MemorizationClassProps {
   description: string;
   studentsCompleted: string;
   color?: string;
+  courseId?: string;
+  onClick?: () => void;
 }
 
-function MemorizationClass({ className, progress, description, studentsCompleted, color = "bg-primary" }: MemorizationClassProps) {
+function MemorizationClass({ className, progress, description, studentsCompleted, color = "bg-primary", onClick }: MemorizationClassProps) {
   return (
-    <div className="border-b border-slate-100 pb-4">
+    <div 
+      className={`border-b border-slate-100 pb-4 ${onClick ? 'cursor-pointer hover:bg-slate-50 rounded-md p-3 -m-3' : ''} transition-colors duration-200`}
+      onClick={onClick}
+    >
       <div className="flex justify-between mb-2">
         <p className="font-medium">{className}</p>
         <p className={`text-sm font-medium ${color === "bg-primary" ? "text-primary" : color === "bg-secondary" ? "text-secondary" : color === "bg-destructive" ? "text-destructive" : "text-primary"}`}>
           {progress}%
         </p>
       </div>
-      <Progress value={progress} className="h-2.5" indicatorClassName={color} />
+      <Progress value={progress} className="h-2.5" />
       <div className="flex justify-between mt-1 text-xs text-slate-500">
         <p>{description}</p>
         <p>{studentsCompleted}</p>
@@ -34,6 +40,7 @@ function MemorizationClass({ className, progress, description, studentsCompleted
 
 export default function MemorizationProgress() {
   const [selectedCourse, setSelectedCourse] = useState<string>("all");
+  const [, setLocation] = useLocation();
 
   // Fetch courses
   const { data: courses, isLoading: coursesLoading } = useQuery<Course[]>({
@@ -46,11 +53,17 @@ export default function MemorizationProgress() {
     enabled: selectedCourse !== "all",
   });
 
+  // Handle click navigation to memorization details
+  const handleClassClick = (courseId: string, className: string) => {
+    setLocation(`/memorization?course=${courseId}&class=${encodeURIComponent(className)}`);
+  };
+
   // Calculate progress by course if memorization data is available
   const memorizationProgress = selectedCourse !== "all" && memorizations 
     ? [
         {
           id: 1,
+          courseId: "1",
           className: "Beginner Quran Class",
           progress: 75,
           description: "Surah Al-Fatiha - Al-Nas",
@@ -59,6 +72,7 @@ export default function MemorizationProgress() {
         },
         {
           id: 2,
+          courseId: "1", 
           className: "Intermediate Quran Class",
           progress: 45,
           description: "Surah Al-Baqarah 1-100",
@@ -67,6 +81,7 @@ export default function MemorizationProgress() {
         },
         {
           id: 3,
+          courseId: "1",
           className: "Advanced Quran Class",
           progress: 90,
           description: "Surah Yaseen - Rahman",
@@ -75,6 +90,7 @@ export default function MemorizationProgress() {
         },
         {
           id: 4,
+          courseId: "1",
           className: "Islamic Studies Class",
           progress: 30,
           description: "Basics of Fiqh",
@@ -139,6 +155,7 @@ export default function MemorizationProgress() {
                 description={item.description}
                 studentsCompleted={item.studentsCompleted}
                 color={item.color}
+                onClick={() => handleClassClick(item.courseId, item.className)}
               />
             ))}
           </div>
