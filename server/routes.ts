@@ -479,6 +479,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/lessons/:id", isAuthenticated, async (req, res) => {
+    try {
+      const lessonId = parseInt(req.params.id);
+      
+      // Enhanced dummy data for lessons - same as in /api/lessons endpoint
+      const allLessons = [
+        {
+          id: 1,
+          title: "Introduction to Surah Al-Fatiha",
+          description: "Comprehensive study of the opening chapter of the Quran, including Arabic pronunciation, translation, and Tafseer.",
+          content: "Surah Al-Fatiha is known as 'The Opening' and is recited in every unit of prayer. This lesson covers:\n\n• Arabic text and pronunciation guide\n• Word-by-word translation\n• Classical commentary from Ibn Kathir\n• Spiritual significance and benefits\n• Proper recitation with Tajweed rules\n\nKey Learning Objectives:\n- Master correct pronunciation of each verse\n- Understand the meaning and context\n- Learn the spiritual benefits of regular recitation\n- Apply Tajweed rules for beautiful recitation",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-16T09:00:00Z",
+          duration: 60,
+          materials: ["Quran", "Tafseer Ibn Kathir", "Audio recitation"],
+          objectives: [
+            "Master pronunciation of Al-Fatiha",
+            "Understand verse meanings",
+            "Learn spiritual significance",
+            "Apply basic Tajweed rules"
+          ],
+          status: "scheduled",
+          orderIndex: 1,
+          createdAt: "2025-06-15T10:00:00Z"
+        },
+        {
+          id: 2,
+          title: "Arabic Grammar Fundamentals",
+          description: "Essential Arabic grammar concepts for Quranic understanding and proper recitation.",
+          content: "Introduction to Arabic grammar essentials:\n\n• Arabic alphabet and letter forms\n• Vowel marks (Harakat) and their sounds\n• Word structure and root patterns\n• Basic sentence formation\n• Common grammatical terms\n• Connection to Quranic text\n\nPractical Applications:\n- Identify word roots in Quranic verses\n- Understand basic sentence structures\n- Recognize common patterns\n- Improve pronunciation accuracy\n- Build vocabulary systematically",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-17T10:00:00Z",
+          duration: 75,
+          materials: ["Arabic grammar book", "Quranic examples", "Practice worksheets"],
+          objectives: [
+            "Learn Arabic alphabet",
+            "Understand basic grammar rules",
+            "Apply rules to Quranic text",
+            "Build foundational vocabulary"
+          ],
+          status: "scheduled",
+          orderIndex: 2,
+          createdAt: "2025-06-15T11:00:00Z"
+        },
+        {
+          id: 3,
+          title: "Hadith Study Methodology",
+          description: "Understanding the science of Hadith authentication and classification.",
+          content: "Comprehensive introduction to Hadith studies:\n\n• Chain of narration (Isnad) analysis\n• Classification system (Sahih, Hasan, Da'if)\n• Major Hadith collections\n• Authentication principles\n• Contextual understanding\n• Application in daily life\n\nKey Collections Covered:\n- Sahih al-Bukhari\n- Sahih Muslim\n- Sunan Abu Dawood\n- Jami' at-Tirmidhi\n- Sunan an-Nasa'i\n- Sunan Ibn Majah",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-18T11:00:00Z",
+          duration: 90,
+          materials: ["Hadith collections", "Authentication charts", "Reference books"],
+          objectives: [
+            "Understand Hadith classification",
+            "Learn authentication methods",
+            "Study major collections",
+            "Apply knowledge practically"
+          ],
+          status: "scheduled",
+          orderIndex: 3,
+          createdAt: "2025-06-15T12:00:00Z"
+        },
+        {
+          id: 4,
+          title: "Tajweed Rules for Beginners",
+          description: "Fundamental rules of Quranic recitation with proper pronunciation and melody.",
+          content: "Essential Tajweed rules for beautiful Quran recitation:\n\n• Proper articulation points (Makharij)\n• Basic rules of pronunciation\n• Elongation (Madd) rules\n• Stopping and starting rules\n• Nasalization (Ghunnah)\n• Common mistakes to avoid\n\nPractical Exercises:\n- Letter pronunciation drills\n- Verse recitation practice\n- Audio comparison exercises\n- Peer review sessions\n- Individual assessment\n\nProgression Levels:\n- Basic letter sounds\n- Simple words\n- Short verses\n- Complete Surahs\n- Fluent recitation",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-19T14:00:00Z",
+          duration: 85,
+          materials: ["Tajweed guide", "Audio recordings", "Practice sheets", "Mushaf with color coding"],
+          objectives: [
+            "Master letter pronunciation",
+            "Learn basic Tajweed rules",
+            "Practice verse recitation",
+            "Develop listening skills"
+          ],
+          status: "scheduled",
+          orderIndex: 4,
+          createdAt: "2025-06-15T13:00:00Z"
+        },
+        {
+          id: 5,
+          title: "Islamic Ethics and Character Building",
+          description: "Building strong moral character based on Islamic teachings and prophetic example.",
+          content: "Comprehensive character development program:\n\n• Prophetic character traits (Akhlaq)\n• Relationship ethics\n• Social responsibility\n• Personal integrity\n• Community engagement\n• Leadership principles\n\nCharacter Traits Covered:\n- Honesty (Sidq)\n- Justice (Adl)\n- Mercy (Rahma)\n- Patience (Sabr)\n- Gratitude (Shukr)\n- Humility (Tawadu)\n\nPractical Applications:\n- Daily character reflection\n- Community service projects\n- Peer mentoring programs\n- Leadership opportunities\n- Conflict resolution skills",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-20T13:00:00Z",
+          duration: 95,
+          materials: ["Character building workbook", "Prophetic sayings compilation", "Reflection journal"],
+          objectives: [
+            "Understand prophetic character",
+            "Develop personal ethics",
+            "Practice social responsibility",
+            "Become positive role model"
+          ],
+          status: "scheduled",
+          orderIndex: 5,
+          createdAt: "2025-06-15T14:00:00Z"
+        },
+        {
+          id: 6,
+          title: "Quran Memorization Techniques",
+          description: "Proven methods for effective Quran memorization with retention strategies.",
+          content: "Systematic approach to Hifz (Quran memorization):\n\n• Setting realistic memorization goals\n• Daily memorization schedule\n• Revision techniques for retention\n• Using audio aids effectively\n• Understanding before memorizing\n• Creating memory associations\n\nMemorization Strategies:\n- Break verses into meaningful segments\n- Use repetition patterns (5-3-1 method)\n- Connect new verses to previously learned\n- Practice during different times of day\n- Group study and peer review\n\nProgress Tracking:\n- Weekly memorization targets\n- Revision tracking charts\n- Quality assessment rubrics\n- Celebration of milestones\n- Individual progress reports",
+          courseId: 1,
+          teacherId: 5,
+          scheduledDate: "2025-06-21T08:00:00Z",
+          duration: 100,
+          materials: ["Mushaf", "Audio recordings", "Memorization charts", "Progress trackers"],
+          objectives: [
+            "Learn effective memorization techniques",
+            "Establish daily revision routine",
+            "Improve retention rates",
+            "Track progress systematically"
+          ],
+          status: "scheduled",
+          orderIndex: 6,
+          createdAt: "2025-06-15T15:00:00Z"
+        }
+      ];
+
+      const lesson = allLessons.find(l => l.id === lessonId);
+      
+      if (!lesson) {
+        return res.status(404).json({ error: "Lesson not found" });
+      }
+      
+      res.json(lesson);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch lesson" });
+    }
+  });
+
   app.get("/api/courses/:courseId/lessons", isAuthenticated, async (req, res) => {
     try {
       const courseId = parseInt(req.params.courseId);
