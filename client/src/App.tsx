@@ -135,6 +135,10 @@ function Router() {
         component={isMobile ? LessonsMobile : LessonsPage} 
       />
       <ProtectedRoute 
+        path="/lessons/:id" 
+        component={isMobile ? LessonsMobile : LessonsPage} 
+      />
+      <ProtectedRoute 
         path="/students/new" 
         component={NewStudentPage} 
         allowedRoles={["director", "teacher"]} 

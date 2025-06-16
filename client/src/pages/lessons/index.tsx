@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useParams } from "wouter";
 import Layout from "@/components/layout/layout";
 import { useAuth } from "@/hooks/use-auth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -26,6 +27,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -54,10 +56,12 @@ type NewLessonValues = z.infer<typeof newLessonSchema>;
 export default function LessonsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const params = useParams();
+  const lessonId = params.id;
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [addLessonOpen, setAddLessonOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("lessons-list");
+  const [activeTab, setActiveTab] = useState(lessonId ? "lesson-view" : "lessons-list");
   
   const isTeacherOrDirector = user?.role === "teacher" || user?.role === "director";
 
@@ -72,6 +76,18 @@ export default function LessonsPage() {
     enabled: !!selectedCourse,
   });
 
+  // Fetch specific lesson if lessonId is provided
+  const { data: specificLesson, isLoading: specificLessonLoading } = useQuery<Lesson>({
+    queryKey: ["/api/lessons", lessonId],
+    enabled: !!lessonId,
+  });
+
+  // Fetch all lessons to find lesson by ID
+  const { data: allLessons, isLoading: allLessonsLoading } = useQuery<Lesson[]>({
+    queryKey: ["/api/lessons"],
+    enabled: !!lessonId && !specificLesson,
+  });
+
   // Form for adding new lesson
   const addLessonForm = useForm<NewLessonValues>({
     resolver: zodResolver(newLessonSchema),
@@ -84,8 +100,26 @@ export default function LessonsPage() {
     },
   });
 
+  // Handle lesson selection when accessing via URL
+  useEffect(() => {
+    if (lessonId && (specificLesson || allLessons)) {
+      const lesson = specificLesson || allLessons?.find(l => l.id === parseInt(lessonId));
+      if (lesson) {
+        setSelectedLesson(lesson);
+        setActiveTab("lesson-view");
+        // Set the course for this lesson if we can find it
+        if (courses && lesson.courseId) {
+          const course = courses.find(c => c.id === lesson.courseId);
+          if (course) {
+            setSelectedCourse(course.id.toString());
+          }
+        }
+      }
+    }
+  }, [lessonId, specificLesson, allLessons, courses]);
+
   // Update courseId when selected course changes
-  useState(() => {
+  useEffect(() => {
     if (selectedCourse) {
       addLessonForm.setValue("courseId", parseInt(selectedCourse));
       // Update order index to be after the last lesson
@@ -96,7 +130,7 @@ export default function LessonsPage() {
         addLessonForm.setValue("orderIndex", maxOrder + 1);
       }
     }
-  });
+  }, [selectedCourse, lessons, addLessonForm]);
 
   // Mutation for adding new lesson
   const addLessonMutation = useMutation({
