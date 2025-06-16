@@ -52,7 +52,7 @@ type AttendanceFormValues = {
   date: string;
   students: {
     id: number;
-    status: "present" | "absent" | "late" | "excused";
+    status: "present" | "absent";
   }[];
 };
 
@@ -96,7 +96,7 @@ export default function AttendancePage() {
         students: z.array(
           z.object({
             id: z.number(),
-            status: z.enum(["present", "absent", "late", "excused"]),
+            status: z.enum(["present", "absent"]),
           })
         ),
       })
@@ -123,7 +123,7 @@ export default function AttendancePage() {
         );
         return {
           id: student.id,
-          status: record?.status as "present" | "absent" | "late" | "excused" || "present",
+          status: (record?.status === "present" || record?.status === "absent") ? record.status : "present",
         };
       });
       form.setValue("students", formattedStudents);
@@ -360,21 +360,36 @@ export default function AttendancePage() {
                                     name={`students.${index}.status`}
                                     render={({ field }) => (
                                       <FormItem>
-                                        <Select
-                                          value={field.value}
-                                          onValueChange={field.onChange}
-                                          disabled={isMutating}
-                                        >
-                                          <SelectTrigger className="w-[120px]">
-                                            <SelectValue />
-                                          </SelectTrigger>
-                                          <SelectContent>
-                                            <SelectItem value="present">Present</SelectItem>
-                                            <SelectItem value="absent">Absent</SelectItem>
-                                            <SelectItem value="late">Late</SelectItem>
-                                            <SelectItem value="excused">Excused</SelectItem>
-                                          </SelectContent>
-                                        </Select>
+                                        <div className="flex gap-2">
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant={field.value === "present" ? "default" : "outline"}
+                                            className={`${
+                                              field.value === "present" 
+                                                ? "bg-green-600 hover:bg-green-700 text-white" 
+                                                : "border-green-600 text-green-600 hover:bg-green-50"
+                                            }`}
+                                            onClick={() => field.onChange("present")}
+                                            disabled={isMutating}
+                                          >
+                                            Present
+                                          </Button>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant={field.value === "absent" ? "default" : "outline"}
+                                            className={`${
+                                              field.value === "absent" 
+                                                ? "bg-red-600 hover:bg-red-700 text-white" 
+                                                : "border-red-600 text-red-600 hover:bg-red-50"
+                                            }`}
+                                            onClick={() => field.onChange("absent")}
+                                            disabled={isMutating}
+                                          >
+                                            Absent
+                                          </Button>
+                                        </div>
                                         <FormMessage />
                                       </FormItem>
                                     )}
