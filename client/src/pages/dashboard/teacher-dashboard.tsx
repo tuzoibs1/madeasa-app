@@ -180,6 +180,7 @@ export default function TeacherDashboard() {
             value: "New this week",
             type: "increase",
           }}
+          href="/assignments"
         />
       </div>
 
