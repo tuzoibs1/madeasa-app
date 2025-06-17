@@ -1,5 +1,6 @@
 import { Request, Response, Express } from "express";
 import { storage } from "./storage";
+import twilio from "twilio";
 
 // SMS notification service using Twilio
 class SMSNotificationService {
@@ -17,7 +18,6 @@ class SMSNotificationService {
 
     if (accountSid && authToken && phoneNumber) {
       try {
-        const twilio = require('twilio');
         this.twilioClient = twilio(accountSid, authToken);
         this.isConfigured = true;
         console.log("Twilio SMS service initialized successfully");
