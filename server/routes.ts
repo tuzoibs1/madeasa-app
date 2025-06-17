@@ -881,11 +881,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Assignments routes
   app.post("/api/assignments", checkRole(['director', 'teacher']), async (req, res) => {
     try {
-      const validData = insertAssignmentSchema.parse(req.body);
+      // Add the authenticated user as createdBy
+      const assignmentData = {
+        ...req.body,
+        createdBy: req.user?.id
+      };
+      
+      const validData = insertAssignmentSchema.parse(assignmentData);
       const assignment = await storage.createAssignment(validData);
       
       // Send SMS notification to parents about new assignment
-      await notifyParentsAboutNewAssignment(validData.courseId, validData.title);
+      await notifyParentsAboutNewAssignment(validData.courseId, validData.title, validData.dueDate);
       
       res.status(201).json(assignment);
     } catch (error) {

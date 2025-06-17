@@ -207,7 +207,10 @@ export default function AssignmentsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Course</FormLabel>
-                          <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                          <Select 
+                            onValueChange={(value) => field.onChange(parseInt(value))}
+                            value={field.value?.toString()}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select a course" />
