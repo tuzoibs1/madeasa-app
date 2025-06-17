@@ -112,6 +112,7 @@ Required environment variables:
 - `API_KEY`: External API authentication
 
 ## Recent Changes
+- June 17, 2025: Implemented and enhanced One-Tap Parent Communication Hub - created comprehensive communication interface with 6 quick action buttons, modern card-based layout, enhanced dialog forms, and improved responsive design for seamless parent-teacher communication
 - June 16, 2025: Enhanced responsive design for lesson pages - optimized buttons and layout for smooth functionality across mobile, tablet, and desktop displays
 - June 15, 2025: Created individual lesson pages with dedicated URLs - each lesson now opens in its own page with full content, learning objectives, and materials
 - June 15, 2025: Fixed 404 error for individual lesson URLs - added missing API endpoint and URL parameter handling for direct lesson access
