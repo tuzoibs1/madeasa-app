@@ -345,10 +345,31 @@ export function setupParentEngagementRoutes(app: Express) {
 
       const { teacherId, studentId, subject, message } = req.body;
       
+      // If teacherId is not provided or is empty, find the teacher for this student
+      let actualTeacherId = teacherId;
+      if (!teacherId || teacherId === "") {
+        const student = await storage.getUser(parseInt(studentId));
+        if (student) {
+          // Get the student's enrollments to find their courses
+          const enrollments = await storage.getEnrollmentsByStudent(parseInt(studentId));
+          if (enrollments.length > 0) {
+            // Get the first course's teacher
+            const course = await storage.getCourse(enrollments[0].courseId);
+            if (course && course.teacherId) {
+              actualTeacherId = course.teacherId;
+            }
+          }
+        }
+      }
+      
+      if (!actualTeacherId) {
+        return res.status(400).json({ error: "Could not determine teacher for this student" });
+      }
+      
       const newMessage = await parentEngagementService.sendMessageToTeacher(
         req.user.id,
-        teacherId,
-        studentId,
+        parseInt(actualTeacherId.toString()),
+        parseInt(studentId),
         subject,
         message
       );
