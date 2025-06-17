@@ -213,6 +213,13 @@ export class DatabaseStorage implements IStorage {
       .then(rows => rows.map(row => row.users));
   }
 
+  async getEnrollmentsByStudent(studentId: number): Promise<Enrollment[]> {
+    return await db
+      .select()
+      .from(enrollments)
+      .where(eq(enrollments.studentId, studentId));
+  }
+
   // Attendance operations
   async createAttendance(insertAttendance: InsertAttendance): Promise<AttendanceRecord> {
     const [attendance] = await db
