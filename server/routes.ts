@@ -891,7 +891,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assignment = await storage.createAssignment(validData);
       
       // Send SMS notification to parents about new assignment
-      await notifyParentsAboutNewAssignment(validData.courseId, validData.title, validData.dueDate);
+      const dueDateString = validData.dueDate ? validData.dueDate.toISOString() : new Date().toISOString();
+      await notifyParentsAboutNewAssignment(validData.courseId, validData.title, dueDateString);
       
       res.status(201).json(assignment);
     } catch (error) {

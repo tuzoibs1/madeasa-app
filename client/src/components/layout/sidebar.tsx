@@ -11,7 +11,8 @@ import {
   LogOut,
   BarChart3,
   TestTube,
-  Building2
+  Building2,
+  TrendingUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
