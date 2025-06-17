@@ -221,7 +221,7 @@ function Router() {
       {/* Assignment pages */}
       <ProtectedRoute 
         path="/assignments" 
-        component={() => import("@/pages/assignments").then(m => m.default)} 
+        component={AssignmentsPage}
         allowedRoles={["director", "teacher"]}
       />
       <ProtectedRoute 

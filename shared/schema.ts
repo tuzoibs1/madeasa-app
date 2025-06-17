@@ -190,7 +190,9 @@ export const insertOrganizationSchema = createInsertSchema(organizations).omit({
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertCourseSchema = createInsertSchema(courses).omit({ id: true, createdAt: true });
 export const insertEnrollmentSchema = createInsertSchema(enrollments).omit({ id: true, enrollmentDate: true });
-export const insertAttendanceSchema = createInsertSchema(attendanceRecords).omit({ id: true });
+export const insertAttendanceSchema = createInsertSchema(attendanceRecords).omit({ id: true }).extend({
+  date: z.string().transform((val) => new Date(val))
+});
 export const insertMemorizationSchema = createInsertSchema(memorizations).omit({ id: true });
 export const insertLessonSchema = createInsertSchema(lessons).omit({ id: true, createdAt: true });
 export const insertEventSchema = createInsertSchema(events).omit({ id: true });
