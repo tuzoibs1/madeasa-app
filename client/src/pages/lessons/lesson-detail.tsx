@@ -187,7 +187,7 @@ export default function LessonDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="prose prose-sm max-w-none">
-                  {lesson.content.split('\n').map((paragraph, index) => {
+                  {lesson.content ? lesson.content.split('\n').map((paragraph, index) => {
                     if (paragraph.trim() === '') return null;
                     
                     // Handle headings and bullet points
@@ -218,7 +218,9 @@ export default function LessonDetailPage() {
                         </p>
                       );
                     }
-                  })}
+                  }) : (
+                    <p className="text-muted-foreground">No content available for this lesson.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
