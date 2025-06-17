@@ -238,18 +238,23 @@ export default function OneTapCommunicationHub() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {quickActions.map((action) => (
-              <Button
+              <div
                 key={action.id}
-                variant="outline"
-                className="h-auto p-4 flex flex-col items-start space-y-2 hover:bg-primary/5 hover:border-primary/20"
+                className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-pointer"
                 onClick={() => handleQuickAction(action)}
               >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center space-x-2">
-                    {action.icon}
-                    <span className="font-medium">{action.title}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      {action.icon}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
+                        {action.title}
+                      </h3>
+                    </div>
                   </div>
                   {action.urgency === 'high' && (
                     <Badge variant="destructive" className="text-xs">
@@ -257,10 +262,11 @@ export default function OneTapCommunicationHub() {
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground text-left">
+                <p className="text-sm text-gray-600 leading-relaxed">
                   {action.description}
                 </p>
-              </Button>
+                <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></div>
+              </div>
             ))}
           </div>
         </CardContent>
@@ -275,35 +281,56 @@ export default function OneTapCommunicationHub() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {communicationHistory && communicationHistory.length > 0 ? (
               communicationHistory.map((item: any) => (
-                <div key={item.id} className="flex items-start space-x-3 p-3 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors">
-                  <div className="flex-shrink-0 mt-1">
-                    <MessageSquare className="h-4 w-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-medium truncate">{item.subject}</h4>
-                      <Badge variant="outline" className="text-xs bg-green-100 text-green-800">
-                        sent
-                      </Badge>
+                <div key={item.id} className="group relative rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/20">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 flex-shrink-0">
+                      {getTypeIcon(item.type || 'message')}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
-                      {item.message.substring(0, 100)}...
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>To Teacher</span>
-                      <span>{format(new Date(item.sentAt), 'MMM dd, h:mm a')}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-900 truncate">{item.subject}</h4>
+                        <Badge variant="outline" className={`text-xs ${getStatusColor(item.status || 'sent')}`}>
+                          {item.status || 'sent'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                        {item.message ? item.message.substring(0, 120) + '...' : item.preview || 'Message content...'}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center space-x-2">
+                          <User className="h-3 w-3" />
+                          <span>To {item.teacher || 'Teacher'}</span>
+                        </div>
+                        <span>{format(new Date(item.sentAt || item.timestamp), 'MMM dd, h:mm a')}</span>
+                      </div>
                     </div>
+                    <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0" />
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </div>
               ))
             ) : (
-              <p className="text-center text-muted-foreground py-8">
-                No recent communications. Use the quick actions above to get started.
-              </p>
+              <div className="text-center py-12">
+                <div className="flex justify-center mb-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                    <MessageCircle className="h-8 w-8 text-gray-400" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No messages yet</h3>
+                <p className="text-gray-600 mb-4">
+                  Start communicating with your child's teachers using the quick actions above.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleQuickAction(quickActions[0])}
+                  className="inline-flex items-center"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send First Message
+                </Button>
+              </div>
             )}
           </div>
         </CardContent>
@@ -311,73 +338,103 @@ export default function OneTapCommunicationHub() {
 
       {/* Quick Message Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              {selectedAction?.icon}
-              <span>{selectedAction?.title}</span>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="flex items-center space-x-3 text-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                {selectedAction?.icon}
+              </div>
+              <div>
+                <span className="font-semibold">{selectedAction?.title}</span>
+                {selectedAction?.urgency === 'high' && (
+                  <Badge variant="destructive" className="ml-2 text-xs">
+                    Urgent
+                  </Badge>
+                )}
+              </div>
             </DialogTitle>
-            <DialogDescription>
-              Send a quick message to your child's teacher
+            <DialogDescription className="text-base">
+              {selectedAction?.description} - Send a message to your child's teacher
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Student</label>
-              <Select value={selectedStudent} onValueChange={setSelectedStudent}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select student" />
-                </SelectTrigger>
-                <SelectContent>
-                  {students && Array.isArray(students) && students.map((student: any) => (
-                    <SelectItem key={student.studentId} value={student.studentId.toString()}>
-                      {student.studentName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-6 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Student *</label>
+                <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Select your child" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {students && Array.isArray(students) && students.map((student: any) => (
+                      <SelectItem key={student.studentId} value={student.studentId.toString()}>
+                        <div className="flex items-center space-x-2">
+                          <User className="h-4 w-4" />
+                          <span>{student.studentName}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Subject *</label>
+                <Input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Message subject"
+                  className="h-11"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium">Subject</label>
-              <Input
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="Message subject"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Message</label>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Message *</label>
               <Textarea
                 value={messageContent}
                 onChange={(e) => setMessageContent(e.target.value)}
-                placeholder="Your message to the teacher"
-                rows={4}
+                placeholder="Type your message here..."
+                rows={5}
+                className="resize-none"
               />
+              <p className="text-xs text-gray-500">
+                {messageContent.length}/500 characters
+              </p>
             </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSendMessage}
-                disabled={sendQuickMessageMutation.isPending}
-              >
-                {sendQuickMessageMutation.isPending ? (
-                  <>
-                    <Clock className="h-4 w-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Message
-                  </>
-                )}
-              </Button>
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Bell className="h-4 w-4" />
+                <span>Teacher will be notified via SMS</span>
+              </div>
+              <div className="flex space-x-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDialogOpen(false)}
+                  className="min-w-[80px]"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSendMessage}
+                  disabled={sendQuickMessageMutation.isPending || !selectedStudent || !subject.trim() || !messageContent.trim()}
+                  className="min-w-[120px]"
+                >
+                  {sendQuickMessageMutation.isPending ? (
+                    <>
+                      <Clock className="h-4 w-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Message
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
