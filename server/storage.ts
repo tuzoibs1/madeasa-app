@@ -42,6 +42,7 @@ export interface IStorage {
   // Enrollments
   createEnrollment(enrollment: InsertEnrollment): Promise<Enrollment>;
   getStudentsByCourse(courseId: number): Promise<User[]>;
+  getEnrollmentsByStudent(studentId: number): Promise<Enrollment[]>;
   
   // Attendance
   createAttendance(attendance: InsertAttendance): Promise<AttendanceRecord>;

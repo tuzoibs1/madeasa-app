@@ -190,10 +190,14 @@ export default function StudentsPage() {
                             )}
                           </TableCell>
                           <TableCell>
-                            <Badge variant="secondary">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setLocation(`/students/${student.id}/classes`)}
+                            >
                               <BookOpen className="h-3 w-3 mr-1" />
                               View Classes
-                            </Badge>
+                            </Button>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">

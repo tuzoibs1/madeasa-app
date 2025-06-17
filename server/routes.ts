@@ -212,6 +212,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/students/:studentId/enrollments", isAuthenticated, async (req, res) => {
+    try {
+      const studentId = parseInt(req.params.studentId);
+      const enrollments = await storage.getEnrollmentsByStudent(studentId);
+      res.json(enrollments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch student enrollments" });
+    }
+  });
+
   // Attendance
   app.post("/api/attendance", checkRole(['director', 'teacher']), async (req, res) => {
     try {

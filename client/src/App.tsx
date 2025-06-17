@@ -33,6 +33,7 @@ import CourseDetailsPage from "@/pages/courses/course-details";
 import StudentsPage from "@/pages/students";
 import NewStudentPage from "@/pages/students/new-student";
 import StudentProfile from "@/pages/students/student-profile";
+import StudentClasses from "@/pages/students/student-classes";
 import TeachersPage from "@/pages/teachers";
 import AboutPage from "@/pages/about";
 import SubmissionsPage from "@/pages/assignments/submissions";
@@ -163,6 +164,11 @@ function Router() {
       <ProtectedRoute 
         path="/students/:id/profile" 
         component={StudentProfile} 
+        allowedRoles={["director", "teacher"]} 
+      />
+      <ProtectedRoute 
+        path="/students/:studentId/classes" 
+        component={StudentClasses} 
         allowedRoles={["director", "teacher"]} 
       />
       <ProtectedRoute 
