@@ -136,7 +136,7 @@ export default function OneTapCommunicationHub() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Fetch student data for parent
-  const { data: students } = useQuery({
+  const { data: students } = useQuery<any[]>({
     queryKey: ["/api/parent/progress"],
   });
 
@@ -330,7 +330,7 @@ export default function OneTapCommunicationHub() {
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent>
-                  {students?.map((student: any) => (
+                  {students && Array.isArray(students) && students.map((student: any) => (
                     <SelectItem key={student.studentId} value={student.studentId.toString()}>
                       {student.studentName}
                     </SelectItem>

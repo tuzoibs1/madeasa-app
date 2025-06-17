@@ -655,6 +655,11 @@ export default function ParentDashboard() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* One-Tap Communication Hub Tab */}
+              <TabsContent value="communication" className="space-y-6">
+                <OneTapCommunicationHub />
+              </TabsContent>
             </Tabs>
           )}
         </>
