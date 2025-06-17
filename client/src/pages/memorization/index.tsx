@@ -361,8 +361,11 @@ export default function MemorizationPage() {
                                     <Input 
                                       type="number" 
                                       min={1} 
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                      value={field.value || ""}
+                                      onChange={(e) => {
+                                        const value = e.target.value === "" ? 1 : parseInt(e.target.value) || 1;
+                                        field.onChange(value);
+                                      }}
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -380,8 +383,11 @@ export default function MemorizationPage() {
                                     <Input 
                                       type="number" 
                                       min={1} 
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                      value={field.value || ""}
+                                      onChange={(e) => {
+                                        const value = e.target.value === "" ? 1 : parseInt(e.target.value) || 1;
+                                        field.onChange(value);
+                                      }}
                                     />
                                   </FormControl>
                                   <FormMessage />

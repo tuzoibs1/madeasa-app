@@ -316,6 +316,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/memorization", checkRole(['director', 'teacher']), async (req, res) => {
+    try {
+      const validData = insertMemorizationSchema.parse(req.body);
+      const memorization = await storage.createMemorization(validData);
+      res.status(201).json(memorization);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: error.errors });
+      }
+      res.status(500).json({ error: "Failed to record memorization" });
+    }
+  });
+
   app.patch("/api/memorization/:id", isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
