@@ -62,6 +62,7 @@ import {
   CheckSquare,
   BookOpenCheck,
 } from "lucide-react";
+import OneTapCommunicationHub from "@/components/parent/one-tap-communication-hub";
 
 interface ParentProgress {
   studentId: number;
@@ -278,10 +279,11 @@ export default function ParentDashboard() {
 
           {currentStudent && (
             <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="progress">Progress</TabsTrigger>
                 <TabsTrigger value="assignments">Assignments</TabsTrigger>
+                <TabsTrigger value="communication">Quick Chat</TabsTrigger>
                 <TabsTrigger value="community">Community</TabsTrigger>
                 <TabsTrigger value="messages">Messages</TabsTrigger>
               </TabsList>
