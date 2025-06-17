@@ -111,8 +111,8 @@ export default function MemorizationPage() {
   const addMemorizationForm = useForm<NewMemorizationValues>({
     resolver: zodResolver(newMemorizationSchema),
     defaultValues: {
-      studentId: parseInt(selectedStudent || "0"),
-      courseId: parseInt(selectedCourse || "0"),
+      studentId: selectedStudent ? parseInt(selectedStudent) : (isStudent && user ? user.id : 1),
+      courseId: selectedCourse ? parseInt(selectedCourse) : 1,
       surah: "",
       ayahStart: 1,
       ayahEnd: 1,
@@ -136,9 +136,16 @@ export default function MemorizationPage() {
   // Mutation for adding new memorization
   const addMemorizationMutation = useMutation({
     mutationFn: async (data: NewMemorizationValues) => {
-      const validData = insertMemorizationSchema.parse(data);
-      const res = await apiRequest("POST", "/api/memorization", validData);
-      return res.json();
+      try {
+        const validData = insertMemorizationSchema.parse(data);
+        const res = await apiRequest("POST", "/api/memorization", validData);
+        return res.json();
+      } catch (error: any) {
+        if (error.name === "ZodError") {
+          throw new Error("Please fill in all required fields correctly");
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       toast({
@@ -230,7 +237,33 @@ export default function MemorizationPage() {
 
   // Handle form submission for adding memorization
   const onAddMemorizationSubmit = (values: NewMemorizationValues) => {
-    addMemorizationMutation.mutate(values);
+    // Ensure we have valid student and course IDs
+    const finalValues = {
+      ...values,
+      studentId: selectedStudent ? parseInt(selectedStudent) : (isStudent && user ? user.id : values.studentId),
+      courseId: selectedCourse ? parseInt(selectedCourse) : values.courseId,
+    };
+    
+    // Validate that we have valid IDs
+    if (!finalValues.studentId || finalValues.studentId <= 0) {
+      toast({
+        title: "Error",
+        description: "Please select a valid student",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!finalValues.courseId || finalValues.courseId <= 0) {
+      toast({
+        title: "Error", 
+        description: "Please select a valid course",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    addMemorizationMutation.mutate(finalValues);
   };
 
   // Update progress handler
