@@ -37,6 +37,7 @@ import StudentClasses from "@/pages/students/student-classes";
 import TeachersPage from "@/pages/teachers";
 import AboutPage from "@/pages/about";
 import SubmissionsPage from "@/pages/assignments/submissions";
+import AssignmentsPage from "@/pages/assignments";
 import AnalyticsDashboard from "@/pages/analytics/analytics-dashboard";
 import QADashboard from "@/pages/qa/qa-dashboard";
 import CompanyAdminDashboard from "@/pages/company-admin/company-admin-dashboard";
@@ -218,6 +219,11 @@ function Router() {
       />
       
       {/* Assignment pages */}
+      <ProtectedRoute 
+        path="/assignments" 
+        component={() => import("@/pages/assignments").then(m => m.default)} 
+        allowedRoles={["director", "teacher"]}
+      />
       <ProtectedRoute 
         path="/assignments/:assignmentId/submissions" 
         component={SubmissionsPage}
